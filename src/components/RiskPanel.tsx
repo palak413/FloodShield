@@ -274,30 +274,44 @@ export const RiskPanel: React.FC<RiskPanelProps> = ({
       </div>
 
       {/* Provenance & Disclaimer Footer */}
-      <div className="pt-3 border-t border-[#DDE3D8] mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] text-[#737F71]">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-[#45664F]" />
-            <span>Engine:</span>
-            <span className="font-mono text-[#344638] text-[11px] font-medium">{provenance.engine}</span>
+      <div className="pt-3 border-t border-[#DDE3D8] mt-2 space-y-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] text-[#737F71]">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-[#45664F]" />
+              <span>Engine:</span>
+              <span className="font-mono text-[#344638] text-[11px] font-medium">{provenance.engine}</span>
+            </div>
+            {provenance.mode === 'AWS_LAMBDA' ? (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#E5EBDD] text-[#45664F] border border-[#45664F]/30 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#45664F] animate-pulse" />
+                AWS LAMBDA ({provenance.executionTimeMs ?? 15}ms)
+              </span>
+            ) : provenance.mode === 'SAMPLE_DATA' ? (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#9E8C58]/15 text-[#9E8C58] border border-[#9E8C58]/30">
+                SAMPLE-DATA ASSESSMENT
+              </span>
+            ) : provenance.mode === 'UNAVAILABLE' ? (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#C87868]/15 text-[#C87868] border border-[#C87868]/30">
+                UNAVAILABLE ASSESSMENT
+              </span>
+            ) : (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#F7F8F4] text-[#737F71] border border-[#DDE3D8]">
+                LOCAL FALLBACK ASSESSMENT
+              </span>
+            )}
           </div>
-          {provenance.mode === 'AWS_LAMBDA' ? (
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#E5EBDD] text-[#45664F] border border-[#45664F]/30 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#45664F] animate-pulse" />
-              LIVE AWS ({provenance.executionTimeMs ?? 15}ms)
-            </span>
-          ) : (
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#F7F8F4] text-[#737F71] border border-[#DDE3D8]">
-              OFFLINE / LOCAL FALLBACK
-            </span>
-          )}
+          <button
+            onClick={onOpenAwsInspector}
+            className="text-[#45664F] hover:underline flex items-center gap-1 text-[11px] cursor-pointer shrink-0 font-medium"
+          >
+            Inspect API Contract <ExternalLink className="w-3 h-3" />
+          </button>
         </div>
-        <button
-          onClick={onOpenAwsInspector}
-          className="text-[#45664F] hover:underline flex items-center gap-1 text-[11px] cursor-pointer shrink-0 font-medium"
-        >
-          Inspect API Contract <ExternalLink className="w-3 h-3" />
-        </button>
+
+        <div className="text-[10px] text-[#737F71] leading-tight">
+          Disclaimer: Deterministic heuristic score based on BMC BRIMSTOWAD benchmarks (25–50 mm/h). Not a hydrodynamic gauge sensor or validated safe transit guarantee.
+        </div>
       </div>
     </div>
   );

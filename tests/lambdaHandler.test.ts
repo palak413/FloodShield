@@ -177,4 +177,47 @@ describe('AWS Lambda Handler Execution & Validation Tests', () => {
     const body = JSON.parse(response.body);
     expect(body.error).toContain('Invalid JSON payload');
   });
+
+  it('rejects unsupported HTTP methods with 405 Method Not Allowed', async () => {
+    const event = {
+      httpMethod: 'DELETE',
+      path: '/assess',
+    };
+    const response = await handler(event);
+    expect(response.statusCode).toBe(405);
+    expect((response.headers as Record<string, string | undefined>)?.['Allow']).toContain('GET, POST, OPTIONS');
+    const body = JSON.parse(response.body);
+    expect(body.error).toContain('Method DELETE not allowed');
+  });
+
+  it('rejects unexpected Content-Type header on POST with 415 Unsupported Media Type', async () => {
+    const event = {
+      httpMethod: 'POST',
+      path: '/assess',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: 'plain text content',
+    };
+    const response = await handler(event);
+    expect(response.statusCode).toBe(415);
+    const body = JSON.parse(response.body);
+    expect(body.error).toContain('Unsupported Media Type');
+  });
+
+  it('rejects NaN and Infinity numbers with 400 Bad Request', async () => {
+    const badParams = { ...validParams, rainfallMmPerHour: NaN };
+    const event = {
+      httpMethod: 'POST',
+      path: '/assess',
+      body: JSON.stringify({
+        location: validLocation,
+        params: badParams,
+      }),
+    };
+    const response = await handler(event);
+    expect(response.statusCode).toBe(400);
+    const body = JSON.parse(response.body);
+    expect(body.error).toContain('params.rainfallMmPerHour must be a finite number');
+  });
 });

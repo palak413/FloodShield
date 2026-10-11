@@ -231,7 +231,11 @@ export const App: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <CloudRain className="w-4 h-4 text-[#45664F]" />
                       <h3 className="font-bold text-sm text-[#344638] uppercase tracking-wider">
-                        Live Mumbai Weather
+                        {weatherData?.status === 'LIVE'
+                          ? 'Live Mumbai Weather'
+                          : weatherData?.status === 'SAMPLE_FALLBACK'
+                          ? 'Mumbai Weather (Sample Data)'
+                          : 'Mumbai Weather (Unavailable)'}
                       </h3>
                     </div>
                     {weatherData && (
@@ -245,9 +249,9 @@ export const App: React.FC = () => {
                         }`}
                       >
                         {weatherData.status === 'LIVE'
-                          ? 'LIVE'
+                          ? 'LIVE TELEMETRY'
                           : weatherData.status === 'SAMPLE_FALLBACK'
-                          ? 'SAMPLE FALLBACK'
+                          ? 'SAMPLE DATA'
                           : 'UNAVAILABLE'}
                       </span>
                     )}
@@ -257,7 +261,7 @@ export const App: React.FC = () => {
                     <div className="space-y-3">
                       {weatherData.status === 'SAMPLE_FALLBACK' && (
                         <div className="p-2 rounded-lg bg-[#9E8C58]/10 border border-[#9E8C58]/25 text-[11px] text-[#737F71]">
-                          <span className="font-semibold text-[#344638]">Offline Sample Data:</span> Live Open-Meteo telemetry was unreachable. Showing representative Mumbai monsoon baseline.
+                          <span className="font-semibold text-[#344638]">Sample data — live weather unavailable:</span> Showing representative Mumbai monsoon baseline.
                         </div>
                       )}
 
@@ -274,7 +278,9 @@ export const App: React.FC = () => {
                           <span className="text-sm font-bold font-mono text-[#45664F]">
                             {weatherData.precipitationMm} mm/h
                           </span>
-                          <p className="text-[10px] text-[#737F71]">Observed Rain</p>
+                          <p className="text-[10px] text-[#737F71]">
+                            {weatherData.status === 'LIVE' ? 'Observed Rain' : 'Baseline Rain'}
+                          </p>
                         </div>
                       </div>
 
@@ -313,30 +319,30 @@ export const App: React.FC = () => {
                           onClick={() => {
                             setSimulationParams((prev) => ({
                               ...prev,
-                              rainfallMmPerHour: Math.max(5, Math.min(150, Math.round(weatherData.precipitationMm))),
+                              rainfallMmPerHour: Math.max(0, Math.min(150, Math.round(weatherData.precipitationMm))),
                             }));
                             setActiveTab('simulator');
                           }}
                           className="w-full py-1.5 px-3 rounded-lg bg-[#E5EBDD] hover:bg-[#DDE3D8] text-[#344638] text-[11px] font-semibold border border-[#45664F]/30 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <CloudRain className="w-3.5 h-3.5 text-[#45664F]" />
-                          Load {weatherData.precipitationMm} mm/h into What-If Simulator →
+                          Use current rainfall ({weatherData.precipitationMm} mm/h) in Simulator →
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="py-8 text-center text-xs text-[#737F71]">
-                      Loading real-time meteorological feed...
+                      Loading meteorological telemetry feed...
                     </div>
                   )}
                 </div>
 
                 <div className="pt-3 border-t border-[#DDE3D8] text-[10px] text-[#737F71] flex items-center justify-between">
-                  <span>
-                    Source: {weatherData?.sourceName || 'Open-Meteo API'} · {weatherData?.lastUpdatedFormatted || 'Checking...'}
+                  <span className="truncate mr-2">
+                    Source: {weatherData?.sourceName || 'Open-Meteo API'} · {weatherData?.observedAtFormatted ? `Observed: ${weatherData.observedAtFormatted}` : weatherData?.lastUpdatedFormatted || 'Checking...'}
                   </span>
-                  <span className="text-[#45664F] font-semibold font-mono">
-                    {weatherData?.status === 'LIVE' ? 'Verified Feed' : 'Fallback Mode'}
+                  <span className="text-[#45664F] font-semibold font-mono shrink-0">
+                    {weatherData?.status === 'LIVE' ? 'Live Telemetry' : 'Sample Fallback'}
                   </span>
                 </div>
               </div>

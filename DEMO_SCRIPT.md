@@ -37,7 +37,7 @@ This script is structured for an impactful, high-energy 3-minute presentation fo
 *(Action: Scroll down to view the 3 updated recommendations and ethical disclaimer)*
 
 > *"Notice how the recommendations instantly adapt:
-> 1. 'AVOID UNDERPASS TRANSIT: Divert via elevated arterial flyovers.'
+> 1. 'AVOID LOW-LYING UNDERPASS TRANSIT: Underpasses accumulate localized runoff rapidly; delay transit and heed official Mumbai Traffic Police advisories.'
 > 2. 'VEHICLE PRESERVATION: Relocate parked vehicles to upper podium decks immediately.'
 > 3. 'TIDAL PEAK ADVISORY: Outfall gates closed during high tide; expect peak water stagnation for the next 2-3 hours.'
 > 
@@ -50,15 +50,15 @@ This script is structured for an impactful, high-energy 3-minute presentation fo
 
 > *"Under the hood, FloodShield is powered by an AWS Serverless architecture designed in `ap-south-1` Mumbai.*
 > 
-> *The React frontend talks to an Amazon API Gateway HTTP API that invokes an AWS Lambda function running on Node.js 20 arm64 Graviton.*
+> *The React frontend talks to an Amazon API Gateway HTTP API that invokes an AWS Lambda function running on Node.js 22 arm64 Graviton.*
 > 
 > *When we trigger the verification test right here in the console, you can see the real HTTP POST request to `/assess` returning HTTP 200 OK in under 20 milliseconds, providing full input factor validation, transparent scoring, and execution provenance."*
 
 ---
 
-### **2:25 – 3:00 | User Impact & Future Expansion**
+### **2:25 – 3:00 | Project Limitations, User Impact & Intended Environmental Value**
 > *"In summary, FloodShield bridges the fatal gap between macro meteorological forecasts and hyper-local survival decisions during urban monsoons.*
 > 
-> *Next steps include integrating IoT water-depth acoustic sensors deployed by the BMC, and expanding our geospatial model to Bengaluru, Chennai, and Delhi.*
+> *Our project is intentionally transparent about its limitations: It is a scenario vulnerability tool based on municipal engineering benchmarks, not a hydrodynamic telemetry sensor. It helps citizens and logistics managers make informed timing decisions before entering low-lying saucer bottlenecks.*
 > 
 > *FloodShield transforms unpredictable monsoon chaos into clear, proactive, and resilient urban intelligence. Thank you, and we'd love to take your questions."*

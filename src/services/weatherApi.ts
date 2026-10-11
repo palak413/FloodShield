@@ -36,14 +36,16 @@ export function getOfflineWeatherSample(errorMessage?: string): LiveWeatherData 
       minute: '2-digit',
       second: '2-digit',
     }),
+    observationTime: undefined,
+    observedAtFormatted: 'Historical Baseline',
     temperatureC: 30.2,
     precipitationMm: 0,
     rainMm: 0,
     windSpeedKmh: 12.5,
     relativeHumidity: 78,
     weatherCode: 2,
-    weatherDescription: 'Partly Cloudy (Sample Demo Data)',
-    errorMessage: errorMessage || 'Live weather API unreachable; showing sample scenario data',
+    weatherDescription: 'Partly Cloudy (Sample Fallback)',
+    errorMessage: errorMessage || 'Sample data — live weather unavailable',
     hourlyForecast: [
       { time: '12:00 PM', precipitationMm: 0, rainProbability: 15 },
       { time: '02:00 PM', precipitationMm: 2.1, rainProbability: 35 },
@@ -96,6 +98,15 @@ export async function fetchLiveMumbaiWeather(
       }
     }
 
+    const observationTime = typeof current.time === 'string' ? current.time : undefined;
+    const observedAtFormatted = observationTime
+      ? new Date(observationTime).toLocaleTimeString('en-IN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        })
+      : undefined;
+
     return {
       status: 'LIVE',
       sourceName: 'Open-Meteo API (19.076°N, 72.877°E)',
@@ -105,6 +116,8 @@ export async function fetchLiveMumbaiWeather(
         minute: '2-digit',
         second: '2-digit',
       }),
+      observationTime,
+      observedAtFormatted,
       temperatureC: Number.isFinite(current.temperature_2m) ? current.temperature_2m : 29.5,
       precipitationMm: Number.isFinite(current.precipitation) ? Math.max(0, current.precipitation) : 0,
       rainMm: Number.isFinite(current.rain) ? Math.max(0, current.rain) : 0,

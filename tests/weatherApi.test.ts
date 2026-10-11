@@ -22,9 +22,10 @@ describe('Weather API & Meteorological Fallback Integrity', () => {
     expect(sample.fetchedAt).toBeDefined();
   });
 
-  it('fetchLiveMumbaiWeather parses live telemetry and tags status as LIVE', async () => {
+  it('fetchLiveMumbaiWeather parses live telemetry with upstream observation timestamp', async () => {
     const mockMeteoPayload = {
       current: {
+        time: '2026-10-11T12:00',
         temperature_2m: 29.5,
         relative_humidity_2m: 85,
         precipitation: 18.2,
@@ -52,6 +53,8 @@ describe('Weather API & Meteorological Fallback Integrity', () => {
     expect(result.precipitationMm).toBe(18.2);
     expect(result.windSpeedKmh).toBe(22.4);
     expect(result.sourceName).toContain('Open-Meteo API');
+    expect(result.observationTime).toBe('2026-10-11T12:00');
+    expect(result.observedAtFormatted).toBeDefined();
     expect(result.weatherDescription).toContain('Moderate rain');
   });
 

@@ -39,6 +39,7 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
   simulatedAssessment,
   observedWeather,
 }) => {
+  const [weatherNotice, setWeatherNotice] = React.useState<string | null>(null);
   const scoreDelta = simulatedAssessment.totalScore - baselineAssessment.totalScore;
 
   // Preset Scenarios
@@ -48,6 +49,7 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
     tide: TideLevel,
     drainage: DrainageCondition
   ) => {
+    setWeatherNotice(null);
     onUpdateParams({
       rainfallMmPerHour: rain,
       durationHours: duration,
@@ -57,6 +59,7 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
   };
 
   const handleReset = () => {
+    setWeatherNotice(null);
     onUpdateParams({
       rainfallMmPerHour: 25,
       durationHours: 2,
@@ -65,12 +68,17 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
     });
   };
 
-  const handleLoadObservedRain = () => {
-    if (observedWeather) {
+  const handleUseCurrentRainfall = () => {
+    if (observedWeather && observedWeather.status !== 'UNAVAILABLE') {
+      const rain = Math.max(0, Math.min(150, Math.round(observedWeather.precipitationMm)));
       onUpdateParams({
         ...currentParams,
-        rainfallMmPerHour: Math.round(observedWeather.precipitationMm),
+        rainfallMmPerHour: rain,
       });
+      const timeLabel = observedWeather.observedAtFormatted || observedWeather.lastUpdatedFormatted;
+      setWeatherNotice(
+        `Loaded observed rainfall: ${rain} mm/h from ${observedWeather.sourceName} (${timeLabel}). Model evaluates this real-world value as a scenario input against local drainage capacity.`
+      );
     }
   };
 
@@ -103,27 +111,51 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
       </div>
 
       {/* Weather-to-Simulator Quick Action */}
-      {observedWeather && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#E5EBDD]/50 border border-[#DDE3D8] text-xs">
-          <div className="flex items-center gap-2.5">
-            <CloudRain className="w-4 h-4 text-[#45664F] shrink-0" />
-            <div>
-              <span className="font-semibold text-[#344638]">
-                Observed Weather ({observedWeather.status === 'LIVE' ? 'Open-Meteo Live Telemetry' : 'Demo Sample'}):
-              </span>{' '}
-              <span className="font-mono font-bold text-[#45664F]">
-                {observedWeather.precipitationMm} mm/h
-              </span>{' '}
-              <span className="text-[#737F71]">({observedWeather.weatherDescription})</span>
+      {observedWeather && observedWeather.status !== 'UNAVAILABLE' ? (
+        <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#E5EBDD]/50 border border-[#DDE3D8] text-xs">
+            <div className="flex items-center gap-2.5">
+              <CloudRain className="w-4 h-4 text-[#45664F] shrink-0" />
+              <div>
+                <span className="font-semibold text-[#344638]">
+                  Observed Weather ({observedWeather.status === 'LIVE' ? 'Open-Meteo Live Telemetry' : 'Sample Data'}):
+                </span>{' '}
+                <span className="font-mono font-bold text-[#45664F]">
+                  {observedWeather.precipitationMm} mm/h
+                </span>{' '}
+                <span className="text-[#737F71]">({observedWeather.weatherDescription})</span>
+                <div className="text-[10px] text-[#737F71] mt-0.5">
+                  Source: {observedWeather.sourceName} · Recorded: {observedWeather.observedAtFormatted || observedWeather.lastUpdatedFormatted}
+                </div>
+              </div>
             </div>
+            <button
+              onClick={handleUseCurrentRainfall}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#45664F] text-white font-medium hover:bg-[#344638] transition-colors shrink-0 cursor-pointer shadow-2xs text-[11px]"
+            >
+              <span>Use current rainfall</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
-          <button
-            onClick={handleLoadObservedRain}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#45664F] text-white font-medium hover:bg-[#344638] transition-colors shrink-0 cursor-pointer shadow-2xs text-[11px]"
-          >
-            <span>Load Current Rain into Simulator</span>
-            <ArrowRight className="w-3 h-3" />
-          </button>
+
+          {weatherNotice && (
+            <div className="p-2.5 rounded-lg bg-[#F7F8F4] border border-[#DDE3D8] text-[11px] text-[#344638] flex items-center justify-between">
+              <span>{weatherNotice}</span>
+              <button
+                onClick={() => setWeatherNotice(null)}
+                className="text-[#737F71] hover:text-[#344638] text-xs ml-2 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="p-3.5 rounded-xl bg-[#F7F8F4] border border-[#DDE3D8] text-xs text-[#737F71] flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-[#9E8C58] shrink-0" />
+          <span>
+            Live rainfall telemetry unavailable. The simulator continues operating using current hypothetical inputs.
+          </span>
         </div>
       )}
 

@@ -83,7 +83,7 @@ export const MapView: React.FC<MapViewProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersMapRef = useRef<Map<string, L.Marker>>(new Map());
-  const prevSelectedIdRef = useRef<string | null>(null);
+  const prevSelectedIdRef = useRef<string | null>(selectedLocation.id);
   const onSelectLocationRef = useRef(onSelectLocation);
 
   // Keep latest onSelectLocation callback in ref to prevent listener rebuilds
@@ -94,6 +94,11 @@ export const MapView: React.FC<MapViewProps> = ({
   // 1. Initialize Map ONCE on mount
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
+
+    // Safety clear leaflet id if re-mounting in strict mode
+    if ((mapContainerRef.current as unknown as { _leaflet_id?: unknown })._leaflet_id) {
+      delete (mapContainerRef.current as unknown as { _leaflet_id?: unknown })._leaflet_id;
+    }
 
     const map = L.map(mapContainerRef.current, {
       center: [19.055, 72.85],
@@ -119,10 +124,17 @@ export const MapView: React.FC<MapViewProps> = ({
     mapInstanceRef.current = map;
 
     const markersMap = markersMapRef.current;
+    const container = mapContainerRef.current;
     return () => {
+      markersMap.forEach((marker) => {
+        marker.off();
+      });
       map.remove();
       mapInstanceRef.current = null;
       markersMap.clear();
+      if (container && (container as unknown as { _leaflet_id?: unknown })._leaflet_id) {
+        delete (container as unknown as { _leaflet_id?: unknown })._leaflet_id;
+      }
     };
   }, []);
 

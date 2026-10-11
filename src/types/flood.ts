@@ -34,6 +34,12 @@ export interface FactorBreakdown {
   surfaceRunoffScore: number; // 0-15
 }
 
+export type AssessmentProvenanceMode =
+  | 'AWS_LAMBDA'
+  | 'LOCAL_FALLBACK'
+  | 'SAMPLE_DATA'
+  | 'UNAVAILABLE';
+
 export interface RiskAssessmentResult {
   locationId: string;
   locationName: string;
@@ -45,7 +51,7 @@ export interface RiskAssessmentResult {
   precautions: string[];
   provenance: {
     engine: string;
-    mode: 'AWS_LAMBDA' | 'LOCAL_FALLBACK';
+    mode: AssessmentProvenanceMode;
     timestamp: string;
     executionTimeMs?: number;
     endpointUrl?: string;
@@ -59,6 +65,8 @@ export interface LiveWeatherData {
   sourceName: string;
   fetchedAt: string;
   lastUpdatedFormatted: string;
+  observationTime?: string;
+  observedAtFormatted?: string;
   temperatureC: number;
   precipitationMm: number;
   rainMm: number;

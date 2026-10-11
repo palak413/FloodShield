@@ -93,10 +93,23 @@ export function validateAssessmentRequest(body) {
 
 export const handler = async (event) => {
   const startTime = Date.now();
-  const httpMethod = event.httpMethod || event.requestContext?.http?.method || 'GET';
+  const httpMethod = (event.httpMethod || event.requestContext?.http?.method || 'GET').toUpperCase();
   const path = event.path || event.rawPath || '/';
 
-  // Handle CORS preflight
+  // 1. Method Not Allowed (405) check
+  const allowedMethods = ['GET', 'POST', 'OPTIONS'];
+  if (!allowedMethods.includes(httpMethod)) {
+    return {
+      statusCode: 405,
+      headers: {
+        ...CORS_HEADERS,
+        Allow: 'GET, POST, OPTIONS',
+      },
+      body: JSON.stringify({ error: `Method ${httpMethod} not allowed.` }),
+    };
+  }
+
+  // 2. Handle CORS preflight
   if (httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -105,7 +118,7 @@ export const handler = async (event) => {
     };
   }
 
-  // Health check endpoint
+  // 3. Health check endpoint
   if (httpMethod === 'GET' && (path.endsWith('/health') || path === '/' || path === '/health/')) {
     return {
       statusCode: 200,
@@ -120,8 +133,34 @@ export const handler = async (event) => {
     };
   }
 
-  // Assessment calculation endpoint
+  // 4. Assessment calculation endpoint
   if (httpMethod === 'POST') {
+    // Validate Content-Type if present
+    const headers = event.headers || {};
+    const contentTypeKey = Object.keys(headers).find(
+      (k) => k.toLowerCase() === 'content-type'
+    );
+    if (contentTypeKey && headers[contentTypeKey]) {
+      const ctValue = headers[contentTypeKey].toLowerCase();
+      if (!ctValue.includes('application/json') && !ctValue.includes('*/*')) {
+        return {
+          statusCode: 415,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            error: `Unsupported Media Type: expected application/json, received "${headers[contentTypeKey]}".`,
+          }),
+        };
+      }
+    }
+
+    if (!path.endsWith('/assess') && path !== '/assess/') {
+      return {
+        statusCode: 404,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: `Route not found: ${httpMethod} ${path}` }),
+      };
+    }
+
     try {
       let body = event.body;
       if (typeof body === 'string') {
