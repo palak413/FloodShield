@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: FloodShield Monsoon Risk Intelligence - Serverless API Gateway & Lambda Handler
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+    Runtime: nodejs20.x
+    Architectures:
+      - arm64
+
+Resources:
+  FloodShieldApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: FloodShieldHttpApi
+      Description: HTTP API Gateway for FloodShield Monsoon Risk Assessment
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+          - X-Api-Key
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        MaxAge: 300
+
+  RiskAssessmentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend/lambda/
+      Handler: handler.handler
+      Description: Computes deterministic flood risk scores based on precipitation, topography, and tidal conditions
+      Environment:
+        Variables:
+          NODE_ENV: production
+      Events:
+        AssessRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref FloodShieldApi
+            Path: /assess
+            Method: post
+        HealthRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref FloodShieldApi
+            Path: /health
+            Method: get
+
+Outputs:
+  ApiEndpoint:
+    Description: HTTP API Gateway endpoint URL
+    Value: !Sub "https://${FloodShieldApi}.execute-api.${AWS::Region}.amazonaws.com"
+  RiskAssessmentFunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt RiskAssessmentFunction.Arn
