@@ -7,6 +7,7 @@ import {
   Sliders,
   Server,
   RefreshCw,
+  ArrowRight,
 } from 'lucide-react';
 import { LocationGeoData, LiveWeatherData } from '../types/flood';
 import { ApiStatus } from '../services/api';
@@ -22,6 +23,7 @@ interface HeaderProps {
   onRefreshWeather: () => void;
   isWeatherLoading: boolean;
   onOpenAwsInspector: () => void;
+  onLoadWeatherRainToSimulator?: (rainfallMm: number) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -35,6 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
   onRefreshWeather,
   isWeatherLoading,
   onOpenAwsInspector,
+  onLoadWeatherRainToSimulator,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-[#FFFFFF]/90 backdrop-blur-md border-b border-[#DDE3D8] px-4 lg:px-8 py-3 transition-colors">
@@ -104,23 +107,58 @@ export const Header: React.FC<HeaderProps> = ({
             </select>
           </div>
 
-          {/* Live Mumbai Weather Badge */}
-          {weatherData && (
+          {/* Weather Badge with Explicit Status */}
+          {weatherData ? (
             <div className="hidden sm:flex items-center gap-2 bg-[#FFFFFF] border border-[#DDE3D8] rounded-lg px-2.5 py-1.5 text-xs shadow-2xs">
               <CloudRain className="w-3.5 h-3.5 text-[#45664F]" />
               <span className="text-[#344638] font-mono font-semibold">{weatherData.temperatureC}°C</span>
               <span className="text-[#DDE3D8]">|</span>
-              <span className="text-[#737F71] text-[11px] truncate max-w-[110px]" title={weatherData.weatherDescription}>
+              <span className="text-[#737F71] text-[11px] truncate max-w-[100px]" title={weatherData.weatherDescription}>
                 {weatherData.precipitationMm > 0 ? `${weatherData.precipitationMm} mm/h` : weatherData.weatherDescription}
               </span>
+
+              {/* Source Integrity Pill */}
+              <span
+                className={`text-[9px] px-1 py-0.2 rounded font-mono font-bold uppercase ${
+                  weatherData.status === 'LIVE'
+                    ? 'bg-[#E5EBDD] text-[#45664F]'
+                    : 'bg-[#9E8C58]/15 text-[#9E8C58]'
+                }`}
+                title={weatherData.sourceName}
+              >
+                {weatherData.status === 'LIVE' ? 'LIVE' : 'SAMPLE'}
+              </span>
+
+              {/* Weather-to-Simulator Action Button */}
+              {onLoadWeatherRainToSimulator && (
+                <button
+                  onClick={() => onLoadWeatherRainToSimulator(weatherData.precipitationMm)}
+                  title={`Load observed ${weatherData.precipitationMm} mm/h rainfall into simulator`}
+                  className="text-[10px] text-[#45664F] hover:bg-[#E5EBDD] px-1.5 py-0.5 rounded transition-colors flex items-center gap-0.5 font-medium cursor-pointer"
+                >
+                  <span>Simulate</span>
+                  <ArrowRight className="w-2.5 h-2.5" />
+                </button>
+              )}
+
               <button
                 onClick={onRefreshWeather}
-                title="Refresh live telemetry"
+                title="Refresh weather telemetry"
                 disabled={isWeatherLoading}
                 className="text-[#737F71] hover:text-[#45664F] transition-colors ml-0.5 cursor-pointer"
               >
                 <RefreshCw className={`w-3 h-3 ${isWeatherLoading ? 'animate-spin text-[#45664F]' : ''}`} />
               </button>
+            </div>
+          ) : isWeatherLoading ? (
+            <div className="hidden sm:flex items-center gap-1.5 bg-[#FFFFFF] border border-[#DDE3D8] rounded-lg px-2.5 py-1.5 text-xs text-[#737F71]">
+              <RefreshCw className="w-3 h-3 animate-spin text-[#45664F]" />
+              <span>Fetching weather...</span>
+            </div>
+          ) : (
+            <div className="hidden sm:flex items-center gap-1.5 bg-[#FFFFFF] border border-[#DDE3D8] rounded-lg px-2.5 py-1.5 text-xs text-[#737F71]">
+              <span>Weather Unavailable</span>
+              <button onClick={onRefreshWeather} className="text-[#45664F] hover:underline cursor-pointer">Retry</button>
             </div>
           )}
 

@@ -52,7 +52,13 @@ export interface RiskAssessmentResult {
   };
 }
 
+export type WeatherSourceStatus = 'LIVE' | 'SAMPLE_FALLBACK' | 'UNAVAILABLE';
+
 export interface LiveWeatherData {
+  status: WeatherSourceStatus;
+  sourceName: string;
+  fetchedAt: string;
+  lastUpdatedFormatted: string;
   temperatureC: number;
   precipitationMm: number;
   rainMm: number;
@@ -60,10 +66,10 @@ export interface LiveWeatherData {
   relativeHumidity: number;
   weatherCode: number;
   weatherDescription: string;
-  lastUpdated: string;
   hourlyForecast: {
     time: string;
     precipitationMm: number;
     rainProbability: number;
   }[];
+  errorMessage?: string;
 }

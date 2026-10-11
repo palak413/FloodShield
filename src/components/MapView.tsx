@@ -10,6 +10,70 @@ interface MapViewProps {
   assessmentsMap: Record<string, RiskAssessmentResult>;
 }
 
+function createMarkerIcon(
+  locName: string,
+  score: number,
+  category: 'LOW' | 'MODERATE' | 'HIGH',
+  isSelected: boolean
+): L.DivIcon {
+  let colorClass = 'bg-[#C87868] text-white border-[#C87868]';
+  let pulseClass = 'pulse-marker-high';
+
+  if (category === 'LOW') {
+    colorClass = 'bg-[#45664F] text-white border-[#45664F]';
+    pulseClass = 'pulse-marker-low';
+  } else if (category === 'MODERATE') {
+    colorClass = 'bg-[#9E8C58] text-white border-[#9E8C58]';
+    pulseClass = 'pulse-marker-moderate';
+  }
+
+  const ringEffect = isSelected
+    ? 'ring-3 ring-[#344638] ring-offset-2 ring-offset-white scale-110 z-30'
+    : 'hover:scale-105';
+
+  const customHtml = `
+    <div class="relative flex items-center justify-center cursor-pointer transition-transform duration-200 ${ringEffect}">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] font-mono shadow-md border-2 ${colorClass} ${pulseClass}">
+        ${score}
+      </div>
+      <div class="absolute -bottom-5 whitespace-nowrap px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#FFFFFF] border border-[#DDE3D8] text-[#344638] shadow-xs pointer-events-none">
+        ${locName.split(',')[0]}
+      </div>
+    </div>
+  `;
+
+  return L.divIcon({
+    className: 'custom-flood-marker',
+    html: customHtml,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+  });
+}
+
+function createPopupContent(
+  loc: LocationGeoData,
+  score: number,
+  category: 'LOW' | 'MODERATE' | 'HIGH'
+): string {
+  let badgeBg = 'bg-[#C87868] text-white';
+  if (category === 'LOW') badgeBg = 'bg-[#45664F] text-white';
+  else if (category === 'MODERATE') badgeBg = 'bg-[#9E8C58] text-white';
+
+  return `
+    <div class="font-sans text-xs p-1">
+      <div class="font-bold text-sm text-[#344638] mb-0.5">${loc.name}</div>
+      <div class="text-[#737F71] mb-1.5">${loc.marathiName} · <span class="text-[#45664F] font-semibold">${loc.ward}</span></div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${badgeBg}">
+          ${category} RISK: ${score}/100
+        </span>
+        <span class="text-[11px] text-[#737F71]">Elev: ${loc.elevationMeters}m</span>
+      </div>
+      <p class="text-[11px] text-[#556353] line-clamp-2 leading-relaxed">${loc.description}</p>
+    </div>
+  `;
+}
+
 export const MapView: React.FC<MapViewProps> = ({
   locations,
   selectedLocation,
@@ -18,127 +82,93 @@ export const MapView: React.FC<MapViewProps> = ({
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<Record<string, L.Marker>>({});
+  const markersMapRef = useRef<Map<string, L.Marker>>(new Map());
+  const prevSelectedIdRef = useRef<string | null>(null);
+  const onSelectLocationRef = useRef(onSelectLocation);
 
+  // Keep latest onSelectLocation callback in ref to prevent listener rebuilds
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    onSelectLocationRef.current = onSelectLocation;
+  }, [onSelectLocation]);
 
-    if (!mapInstanceRef.current) {
-      // Initialize Leaflet Map centered on central Mumbai
-      const map = L.map(mapContainerRef.current, {
-        center: [19.055, 72.85],
-        zoom: 12,
-        minZoom: 10,
-        maxZoom: 16,
-        zoomControl: false,
-      });
+  // 1. Initialize Map ONCE on mount
+  useEffect(() => {
+    if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-      // CartoDB Positron Light Basemap Tiles
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 19,
-      }).addTo(map);
+    const map = L.map(mapContainerRef.current, {
+      center: [19.055, 72.85],
+      zoom: 12,
+      minZoom: 10,
+      maxZoom: 16,
+      zoomControl: false,
+    });
 
-      // Add Zoom control at top-right
-      L.control
-        .zoom({
-          position: 'topright',
-        })
-        .addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }).addTo(map);
 
-      mapInstanceRef.current = map;
-    }
+    L.control
+      .zoom({
+        position: 'topright',
+      })
+      .addTo(map);
 
+    mapInstanceRef.current = map;
+
+    const markersMap = markersMapRef.current;
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+      markersMap.clear();
+    };
+  }, []);
+
+  // 2. Update markers independently from map initialization
+  useEffect(() => {
     const map = mapInstanceRef.current;
+    if (!map) return;
 
-    // Remove existing markers
-    Object.values(markersRef.current).forEach((m) => m.remove());
-    markersRef.current = {};
-
-    // Render Markers
     locations.forEach((loc) => {
       const assessment = assessmentsMap[loc.id];
       const score = assessment ? assessment.totalScore : 50;
       const category = assessment ? assessment.category : 'MODERATE';
       const isSelected = selectedLocation.id === loc.id;
 
-      let colorClass = 'bg-[#C87868] text-white border-[#C87868]';
-      let pulseClass = 'pulse-marker-high';
-      let badgeBg = 'bg-[#C87868] text-white';
+      const icon = createMarkerIcon(loc.name, score, category, isSelected);
+      const popupHtml = createPopupContent(loc, score, category);
 
-      if (category === 'LOW') {
-        colorClass = 'bg-[#45664F] text-white border-[#45664F]';
-        pulseClass = 'pulse-marker-low';
-        badgeBg = 'bg-[#45664F] text-white';
-      } else if (category === 'MODERATE') {
-        colorClass = 'bg-[#9E8C58] text-white border-[#9E8C58]';
-        pulseClass = 'pulse-marker-moderate';
-        badgeBg = 'bg-[#9E8C58] text-white';
+      const existingMarker = markersMapRef.current.get(loc.id);
+
+      if (existingMarker) {
+        existingMarker.setIcon(icon);
+        existingMarker.setPopupContent(popupHtml);
+      } else {
+        const marker = L.marker(loc.coordinates, { icon }).addTo(map);
+        marker.bindPopup(popupHtml);
+        marker.on('click', () => {
+          onSelectLocationRef.current(loc);
+        });
+        markersMapRef.current.set(loc.id, marker);
       }
-
-      const ringEffect = isSelected
-        ? 'ring-3 ring-[#344638] ring-offset-2 ring-offset-white scale-110 z-30'
-        : 'hover:scale-105';
-
-      const customHtml = `
-        <div class="relative flex items-center justify-center cursor-pointer transition-transform duration-200 ${ringEffect}">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] font-mono shadow-md border-2 ${colorClass} ${pulseClass}">
-            ${score}
-          </div>
-          <div class="absolute -bottom-5 whitespace-nowrap px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#FFFFFF] border border-[#DDE3D8] text-[#344638] shadow-xs pointer-events-none">
-            ${loc.name.split(',')[0]}
-          </div>
-        </div>
-      `;
-
-      const customIcon = L.divIcon({
-        className: 'custom-flood-marker',
-        html: customHtml,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
-      });
-
-      const marker = L.marker(loc.coordinates, { icon: customIcon }).addTo(map);
-
-      // Popup
-      const popupHtml = `
-        <div class="font-sans text-xs p-1">
-          <div class="font-bold text-sm text-[#344638] mb-0.5">${loc.name}</div>
-          <div class="text-[#737F71] mb-1.5">${loc.marathiName} · <span class="text-[#45664F] font-semibold">${loc.ward}</span></div>
-          <div class="flex items-center gap-2 mb-2">
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${badgeBg}">
-              ${category} RISK: ${score}/100
-            </span>
-            <span class="text-[11px] text-[#737F71]">Elev: ${loc.elevationMeters}m</span>
-          </div>
-          <p class="text-[11px] text-[#556353] line-clamp-2 leading-relaxed">${loc.description}</p>
-        </div>
-      `;
-      marker.bindPopup(popupHtml);
-
-      marker.on('click', () => {
-        onSelectLocation(loc);
-      });
-
-      markersRef.current[loc.id] = marker;
     });
+  }, [locations, assessmentsMap, selectedLocation.id]);
 
-    // Fly to selected location smoothly
-    if (selectedLocation) {
+  // 3. Animate map ONLY when selectedLocation.id changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (prevSelectedIdRef.current !== selectedLocation.id) {
+      prevSelectedIdRef.current = selectedLocation.id;
       map.flyTo(selectedLocation.coordinates, Math.max(map.getZoom(), 13), {
         animate: true,
         duration: 0.8,
       });
     }
-
-    const timer = setTimeout(() => {
-      map.invalidateSize();
-    }, 200);
-
-    return () => clearTimeout(timer);
-  }, [locations, selectedLocation, assessmentsMap, onSelectLocation]);
+  }, [selectedLocation.id, selectedLocation.coordinates]);
 
   const handleCenterMumbai = () => {
     if (mapInstanceRef.current) {
@@ -208,7 +238,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
       {/* Disclaimers & Provenance Note */}
       <div className="absolute bottom-3 right-3 z-10 hidden sm:block bg-[#FFFFFF]/90 backdrop-blur-md px-2.5 py-1 rounded-md border border-[#DDE3D8] text-[10px] text-[#737F71] shadow-2xs">
-        Simulated Heuristic Overlays · Not a Telemetry Boundary
+        Heuristic Vulnerability Index · Not a Live Flood Boundary
       </div>
     </div>
   );

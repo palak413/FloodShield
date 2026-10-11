@@ -38,7 +38,7 @@ describe('FloodShield Deterministic Risk Engine', () => {
     expect(result.factors.precipitationScore).toBeGreaterThanOrEqual(30);
     expect(result.factors.tidalHydraulicScore).toBeGreaterThanOrEqual(15);
     expect(result.explanation).toContain('Severe waterlogging risk');
-    expect(result.precautions[0]).toContain('AVOID UNDERPASS');
+    expect(result.precautions[0]).toContain('AVOID LOW-LYING UNDERPASS');
   });
 
   it('demonstrates topographical variance between low-lying depression and coastal ridge', () => {

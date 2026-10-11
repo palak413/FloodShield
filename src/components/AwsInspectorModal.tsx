@@ -143,7 +143,7 @@ export const AwsInspectorModal: React.FC<AwsInspectorModalProps> = ({
               <ArrowRight className="w-4 h-4 text-[#737F71] hidden sm:block" />
               <div className="p-2.5 rounded-lg bg-[#FFFFFF] border border-[#DDE3D8] flex-1 min-w-[120px] shadow-2xs">
                 <div className="text-[10px] text-[#737F71]">Compute</div>
-                <div className="font-bold text-[#344638] mt-0.5">AWS Lambda Node 20</div>
+                <div className="font-bold text-[#344638] mt-0.5">AWS Lambda Node 22</div>
                 <div className="text-[9px] text-[#45664F] font-mono">Heuristic Engine</div>
               </div>
               <ArrowRight className="w-4 h-4 text-[#737F71] hidden sm:block" />
@@ -225,7 +225,7 @@ export const AwsInspectorModal: React.FC<AwsInspectorModalProps> = ({
             <div className="font-mono text-[10px] text-[#556353] bg-[#FFFFFF] p-3 rounded border border-[#DDE3D8] leading-relaxed shadow-2xs">
               <div>Transform: AWS::Serverless-2016-10-31</div>
               <div>Region: ap-south-1 (Mumbai)</div>
-              <div>Runtime: nodejs20.x (arm64 Graviton)</div>
+              <div>Runtime: nodejs22.x (arm64 Graviton)</div>
               <div>Handler: backend/lambda/handler.handler</div>
               <div>Routes: POST /assess, GET /health</div>
             </div>

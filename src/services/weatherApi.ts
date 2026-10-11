@@ -1,10 +1,10 @@
 import { LiveWeatherData } from '../types/flood';
 
-const OPEN_METEO_MUMBAI_URL =
+export const OPEN_METEO_MUMBAI_URL =
   'https://api.open-meteo.com/v1/forecast?latitude=19.0760&longitude=72.8777&current=temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m&hourly=precipitation,precipitation_probability&forecast_days=1&timezone=Asia%2FKolkata';
 
 // WMO Weather Interpretation Codes (WW)
-const WMO_CODES: Record<number, string> = {
+export const WMO_CODES: Record<number, string> = {
   0: 'Clear sky',
   1: 'Mainly clear',
   2: 'Partly cloudy',
@@ -25,12 +25,46 @@ const WMO_CODES: Record<number, string> = {
   99: 'Thunderstorm with heavy hail',
 };
 
-export async function fetchLiveMumbaiWeather(): Promise<LiveWeatherData> {
+export function getOfflineWeatherSample(errorMessage?: string): LiveWeatherData {
+  const now = new Date();
+  return {
+    status: 'SAMPLE_FALLBACK',
+    sourceName: 'Static Demonstration Sample (Open-Meteo Telemetry Offline)',
+    fetchedAt: now.toISOString(),
+    lastUpdatedFormatted: now.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }),
+    temperatureC: 30.2,
+    precipitationMm: 0,
+    rainMm: 0,
+    windSpeedKmh: 12.5,
+    relativeHumidity: 78,
+    weatherCode: 2,
+    weatherDescription: 'Partly Cloudy (Sample Demo Data)',
+    errorMessage: errorMessage || 'Live weather API unreachable; showing sample scenario data',
+    hourlyForecast: [
+      { time: '12:00 PM', precipitationMm: 0, rainProbability: 15 },
+      { time: '02:00 PM', precipitationMm: 2.1, rainProbability: 35 },
+      { time: '04:00 PM', precipitationMm: 5.4, rainProbability: 60 },
+    ],
+  };
+}
+
+export async function fetchLiveMumbaiWeather(
+  apiUrl: string = OPEN_METEO_MUMBAI_URL
+): Promise<LiveWeatherData> {
+  const now = new Date();
   try {
-    const res = await fetch(OPEN_METEO_MUMBAI_URL);
+    const res = await fetch(apiUrl, {
+      signal: AbortSignal.timeout(6000),
+    });
+
     if (!res.ok) {
-      throw new Error(`Open-Meteo returned status ${res.status}`);
+      throw new Error(`Open-Meteo responded with HTTP ${res.status}: ${res.statusText}`);
     }
+
     const data = await res.json();
     const current = data.current || {};
     const hourly = data.hourly || {};
@@ -38,7 +72,12 @@ export async function fetchLiveMumbaiWeather(): Promise<LiveWeatherData> {
     const code = current.weather_code ?? 0;
     const weatherDescription = WMO_CODES[code] || 'Monsoon Conditions';
 
-    const hourlyForecast = [];
+    const hourlyForecast: {
+      time: string;
+      precipitationMm: number;
+      rainProbability: number;
+    }[] = [];
+
     if (hourly.time && Array.isArray(hourly.time)) {
       for (let i = 0; i < Math.min(6, hourly.time.length); i++) {
         hourlyForecast.push({
@@ -47,43 +86,37 @@ export async function fetchLiveMumbaiWeather(): Promise<LiveWeatherData> {
             minute: '2-digit',
             hour12: true,
           }),
-          precipitationMm: hourly.precipitation?.[i] ?? 0,
-          rainProbability: hourly.precipitation_probability?.[i] ?? 0,
+          precipitationMm: Number.isFinite(hourly.precipitation?.[i])
+            ? hourly.precipitation[i]
+            : 0,
+          rainProbability: Number.isFinite(hourly.precipitation_probability?.[i])
+            ? hourly.precipitation_probability[i]
+            : 0,
         });
       }
     }
 
     return {
-      temperatureC: current.temperature_2m ?? 29.5,
-      precipitationMm: current.precipitation ?? 0,
-      rainMm: current.rain ?? 0,
-      windSpeedKmh: current.wind_speed_10m ?? 14.2,
-      relativeHumidity: current.relative_humidity_2m ?? 82,
-      weatherCode: code,
-      weatherDescription,
-      lastUpdated: new Date().toLocaleTimeString('en-IN', {
+      status: 'LIVE',
+      sourceName: 'Open-Meteo API (19.076°N, 72.877°E)',
+      fetchedAt: now.toISOString(),
+      lastUpdatedFormatted: now.toLocaleTimeString('en-IN', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
       }),
+      temperatureC: Number.isFinite(current.temperature_2m) ? current.temperature_2m : 29.5,
+      precipitationMm: Number.isFinite(current.precipitation) ? Math.max(0, current.precipitation) : 0,
+      rainMm: Number.isFinite(current.rain) ? Math.max(0, current.rain) : 0,
+      windSpeedKmh: Number.isFinite(current.wind_speed_10m) ? current.wind_speed_10m : 14.2,
+      relativeHumidity: Number.isFinite(current.relative_humidity_2m) ? current.relative_humidity_2m : 82,
+      weatherCode: code,
+      weatherDescription,
       hourlyForecast,
     };
-  } catch (err) {
-    console.warn('Live weather fetch failed, utilizing baseline telemetry', err);
-    return {
-      temperatureC: 30.2,
-      precipitationMm: 0,
-      rainMm: 0,
-      windSpeedKmh: 12.5,
-      relativeHumidity: 78,
-      weatherCode: 2,
-      weatherDescription: 'Partly Cloudy (Baseline Telemetry)',
-      lastUpdated: new Date().toLocaleTimeString('en-IN'),
-      hourlyForecast: [
-        { time: '12:00 PM', precipitationMm: 0, rainProbability: 15 },
-        { time: '02:00 PM', precipitationMm: 2.1, rainProbability: 35 },
-        { time: '04:00 PM', precipitationMm: 5.4, rainProbability: 60 },
-      ],
-    };
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Unknown network error';
+    console.warn('[WeatherService] Live telemetry fetch failed, reverting to marked sample data:', errorMsg);
+    return getOfflineWeatherSample(errorMsg);
   }
 }

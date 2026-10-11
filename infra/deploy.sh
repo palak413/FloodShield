@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 echo "=========================================================="
 echo "  FLOODSHIELD — AWS AP-SOUTH-1 DEPLOYMENT SCRIPT"
+echo "=========================================================="
+echo "  Notice on AWS Billing & Potentially Chargeable Resources:"
+echo "  • AWS Lambda: Serverless ARM64 (Node.js 22), 1M free requests/mo"
+echo "  • Amazon API Gateway: HTTP API, 1M free requests/mo (Free Tier)"
+echo "  • Amazon CloudWatch Logs: 5 GB log ingestion included in Free Tier"
+echo "  • Amazon S3: Deployment bucket artifacts (Free Tier eligible)"
 echo "=========================================================="
 
 REGION="${AWS_REGION:-ap-south-1}"
@@ -31,40 +37,64 @@ echo "✅ AWS credentials verified successfully."
 CALLER_ARN=$(aws sts get-caller-identity --query "Arn" --output text)
 echo "   Principal: $CALLER_ARN"
 
-# 3. Check SAM CLI or CloudFormation
+# 3. Check SAM CLI
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-if command -v sam &> /dev/null; then
-    echo "🚀 Deploying with AWS SAM in $REGION..."
-    sam build -t template.yaml
-    sam deploy \
-      --stack-name "$STACK_NAME" \
-      --region "$REGION" \
-      --capabilities CAPABILITY_IAM \
-      --resolve-s3 \
-      --no-confirm-changeset
-
-    API_URL=$(aws cloudformation describe-stacks \
-      --stack-name "$STACK_NAME" \
-      --region "$REGION" \
-      --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" \
-      --output text)
-
-    echo "=========================================================="
-    echo "✅ DEPLOYMENT SUCCESSFUL!"
-    echo "   API Gateway URL: $API_URL"
-    echo "   Health Check:    curl $API_URL/health"
-    echo "   Set frontend:   echo \"VITE_AWS_API_URL=$API_URL\" > ../.env"
-    echo "=========================================================="
-else
-    echo "⚠️  AWS SAM CLI not found. Packaging Lambda function bundle..."
-    DIST_DIR="$SCRIPT_DIR/../dist-lambda"
-    mkdir -p "$DIST_DIR"
-    cp -r "$SCRIPT_DIR/../backend/lambda/"* "$DIST_DIR/"
-    cd "$DIST_DIR"
-    zip -rq lambda.zip .
-    echo "✅ Lambda bundle packaged at $DIST_DIR/lambda.zip"
-    echo "To deploy via SAM, install SAM CLI: brew install aws-sam-cli"
-    echo "Or deploy via CloudFormation / AWS Console."
+if ! command -v sam &> /dev/null; then
+    echo "❌ Error: AWS SAM CLI is required for automated deployment."
+    echo "Install via Homebrew: brew install aws-sam-cli"
+    exit 1
 fi
+
+echo "🚀 Building SAM application with Node.js 22 runtime..."
+sam build -t template.yaml
+
+echo "🚀 Deploying CloudFormation stack: $STACK_NAME in $REGION..."
+sam deploy \
+  --stack-name "$STACK_NAME" \
+  --region "$REGION" \
+  --capabilities CAPABILITY_IAM \
+  --resolve-s3 \
+  --no-confirm-changeset
+
+API_URL=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_NAME" \
+  --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" \
+  --output text)
+
+if [ -z "$API_URL" ] || [ "$API_URL" = "None" ]; then
+    echo "❌ Error: Could not retrieve ApiEndpoint from stack outputs."
+    exit 1
+fi
+
+echo "📡 Deployed API Gateway URL: $API_URL"
+echo "🔍 Running Post-Deployment Verification Smoke Tests..."
+
+# Test 1: GET /health
+echo "   Testing GET $API_URL/health..."
+HEALTH_RESPONSE=$(curl -fsSL --max-time 10 "$API_URL/health")
+if ! echo "$HEALTH_RESPONSE" | grep -q '"status":"healthy"'; then
+    echo "❌ Health check failed. Received: $HEALTH_RESPONSE"
+    exit 1
+fi
+echo "   ✅ Health check passed: $HEALTH_RESPONSE"
+
+# Test 2: POST /assess
+echo "   Testing POST $API_URL/assess..."
+TEST_PAYLOAD='{"location":{"id":"milan-subway","name":"Milan Subway, Santacruz","elevationMeters":3.8,"depressionIndex":10,"proximityToWaterwayMeters":1600,"imperviousRatio":0.95},"params":{"rainfallMmPerHour":40,"durationHours":2,"tideLevel":"MID_TIDE","drainageCondition":"STANDARD"}}'
+ASSESS_RESPONSE=$(curl -fsSL -X POST -H "Content-Type: application/json" -d "$TEST_PAYLOAD" --max-time 10 "$API_URL/assess")
+if ! echo "$ASSESS_RESPONSE" | grep -q '"AWS_LAMBDA"'; then
+    echo "❌ Assessment endpoint verification failed. Received: $ASSESS_RESPONSE"
+    exit 1
+fi
+echo "   ✅ Assessment check passed with verified AWS_LAMBDA provenance."
+
+echo "=========================================================="
+echo "🎉 DEPLOYMENT AND POST-VERIFICATION SUCCESSFUL!"
+echo "   API Gateway URL: $API_URL"
+echo "   Configure Frontend (.env):"
+echo "     echo \"VITE_AWS_API_URL=$API_URL\" > \"$SCRIPT_DIR/../.env\""
+echo "=========================================================="
+

@@ -10,6 +10,7 @@ import {
   Minus,
   AlertCircle,
   RotateCcw,
+  ArrowRight,
 } from 'lucide-react';
 import {
   LocationGeoData,
@@ -17,6 +18,7 @@ import {
   RiskAssessmentResult,
   TideLevel,
   DrainageCondition,
+  LiveWeatherData,
 } from '../types/flood';
 
 interface StormSimulatorProps {
@@ -27,6 +29,7 @@ interface StormSimulatorProps {
   onUpdateParams: (params: SimulationParams) => void;
   baselineAssessment: RiskAssessmentResult;
   simulatedAssessment: RiskAssessmentResult;
+  observedWeather?: LiveWeatherData | null;
 }
 
 export const StormSimulator: React.FC<StormSimulatorProps> = ({
@@ -34,6 +37,7 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
   onUpdateParams,
   baselineAssessment,
   simulatedAssessment,
+  observedWeather,
 }) => {
   const scoreDelta = simulatedAssessment.totalScore - baselineAssessment.totalScore;
 
@@ -59,6 +63,15 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
       tideLevel: 'MID_TIDE',
       drainageCondition: 'STANDARD',
     });
+  };
+
+  const handleLoadObservedRain = () => {
+    if (observedWeather) {
+      onUpdateParams({
+        ...currentParams,
+        rainfallMmPerHour: Math.round(observedWeather.precipitationMm),
+      });
+    }
   };
 
   return (
@@ -88,6 +101,31 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
           Reset to Baseline
         </button>
       </div>
+
+      {/* Weather-to-Simulator Quick Action */}
+      {observedWeather && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#E5EBDD]/50 border border-[#DDE3D8] text-xs">
+          <div className="flex items-center gap-2.5">
+            <CloudRain className="w-4 h-4 text-[#45664F] shrink-0" />
+            <div>
+              <span className="font-semibold text-[#344638]">
+                Observed Weather ({observedWeather.status === 'LIVE' ? 'Open-Meteo Live Telemetry' : 'Demo Sample'}):
+              </span>{' '}
+              <span className="font-mono font-bold text-[#45664F]">
+                {observedWeather.precipitationMm} mm/h
+              </span>{' '}
+              <span className="text-[#737F71]">({observedWeather.weatherDescription})</span>
+            </div>
+          </div>
+          <button
+            onClick={handleLoadObservedRain}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#45664F] text-white font-medium hover:bg-[#344638] transition-colors shrink-0 cursor-pointer shadow-2xs text-[11px]"
+          >
+            <span>Load Current Rain into Simulator</span>
+            <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+      )}
 
       {/* Preset Scenarios Buttons */}
       <div>
@@ -378,7 +416,7 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
       <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#F7F8F4] border border-[#DDE3D8] text-[11px] text-[#737F71]">
         <AlertCircle className="w-4 h-4 text-[#45664F] shrink-0 mt-0.5" />
         <div className="leading-relaxed">
-          <strong className="text-[#344638]">Heuristic Simulation Notice:</strong> This simulator illustrates relative susceptibility under municipal flood mechanics (BMC capacity, elevation saucer depth, tidal lockout). It is designed to assist urban planning and emergency precaution decisions, not to claim hydrodynamic sensor telemetry.
+          <strong className="text-[#344638]">Heuristic Methodology Notice:</strong> Weather inputs represent atmospheric observations. The susceptibility score illustrates relative drainage capacity strain under municipal standards (BMC 25–50 mm/h culvert capacity and Chitale Committee flood reports). This is an illustrative vulnerability model to assist precautionary decisions, not a measured hydrodynamic boundary.
         </div>
       </div>
     </div>

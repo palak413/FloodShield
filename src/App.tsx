@@ -17,14 +17,9 @@ import { fetchLiveMumbaiWeather } from './services/weatherApi';
 import {
   CloudRain,
   ShieldAlert,
-  Info,
   Layers,
-  Compass,
-  AlertTriangle,
-  ExternalLink,
   Droplets,
   Wind,
-  Gauge,
 } from 'lucide-react';
 
 const DEFAULT_SIMULATION_PARAMS: SimulationParams = {
@@ -139,6 +134,13 @@ export const App: React.FC = () => {
         onRefreshWeather={loadWeather}
         isWeatherLoading={isWeatherLoading}
         onOpenAwsInspector={() => setIsAwsInspectorOpen(true)}
+        onLoadWeatherRainToSimulator={(rain) => {
+          setSimulationParams((prev) => ({
+            ...prev,
+            rainfallMmPerHour: Math.max(5, Math.min(150, Math.round(rain))),
+          }));
+          setActiveTab('simulator');
+        }}
       />
 
       {/* Main Workspace */}
@@ -222,7 +224,7 @@ export const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Weather Telemetry & Open-Meteo Diagnostics */}
+              {/* Weather Telemetry & Meteorological Diagnostics */}
               <div className="bg-[#FFFFFF] border border-[#DDE3D8] rounded-2xl p-5 shadow-xs flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#DDE3D8]">
@@ -232,13 +234,33 @@ export const App: React.FC = () => {
                         Live Mumbai Weather
                       </h3>
                     </div>
-                    <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[#E5EBDD] text-[#45664F] border border-[#DDE3D8]">
-                      Open-Meteo
-                    </span>
+                    {weatherData && (
+                      <span
+                        className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border ${
+                          weatherData.status === 'LIVE'
+                            ? 'bg-[#E5EBDD] text-[#45664F] border-[#45664F]/30'
+                            : weatherData.status === 'SAMPLE_FALLBACK'
+                            ? 'bg-[#9E8C58]/15 text-[#9E8C58] border-[#9E8C58]/30'
+                            : 'bg-[#C87868]/15 text-[#C87868] border-[#C87868]/30'
+                        }`}
+                      >
+                        {weatherData.status === 'LIVE'
+                          ? 'LIVE'
+                          : weatherData.status === 'SAMPLE_FALLBACK'
+                          ? 'SAMPLE FALLBACK'
+                          : 'UNAVAILABLE'}
+                      </span>
+                    )}
                   </div>
 
                   {weatherData ? (
                     <div className="space-y-3">
+                      {weatherData.status === 'SAMPLE_FALLBACK' && (
+                        <div className="p-2 rounded-lg bg-[#9E8C58]/10 border border-[#9E8C58]/25 text-[11px] text-[#737F71]">
+                          <span className="font-semibold text-[#344638]">Offline Sample Data:</span> Live Open-Meteo telemetry was unreachable. Showing representative Mumbai monsoon baseline.
+                        </div>
+                      )}
+
                       <div className="flex items-baseline justify-between">
                         <div>
                           <span className="text-3xl font-extrabold text-[#344638] font-mono">
@@ -252,7 +274,7 @@ export const App: React.FC = () => {
                           <span className="text-sm font-bold font-mono text-[#45664F]">
                             {weatherData.precipitationMm} mm/h
                           </span>
-                          <p className="text-[10px] text-[#737F71]">Current Rain</p>
+                          <p className="text-[10px] text-[#737F71]">Observed Rain</p>
                         </div>
                       </div>
 
@@ -284,6 +306,23 @@ export const App: React.FC = () => {
                           ))}
                         </div>
                       </div>
+
+                      {/* Action to Transfer Weather to Simulator */}
+                      <div className="pt-2">
+                        <button
+                          onClick={() => {
+                            setSimulationParams((prev) => ({
+                              ...prev,
+                              rainfallMmPerHour: Math.max(5, Math.min(150, Math.round(weatherData.precipitationMm))),
+                            }));
+                            setActiveTab('simulator');
+                          }}
+                          className="w-full py-1.5 px-3 rounded-lg bg-[#E5EBDD] hover:bg-[#DDE3D8] text-[#344638] text-[11px] font-semibold border border-[#45664F]/30 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <CloudRain className="w-3.5 h-3.5 text-[#45664F]" />
+                          Load {weatherData.precipitationMm} mm/h into What-If Simulator →
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="py-8 text-center text-xs text-[#737F71]">
@@ -293,8 +332,12 @@ export const App: React.FC = () => {
                 </div>
 
                 <div className="pt-3 border-t border-[#DDE3D8] text-[10px] text-[#737F71] flex items-center justify-between">
-                  <span>Source: Open-Meteo API (19.076°N, 72.877°E)</span>
-                  <span className="text-[#45664F] font-semibold">Live Telemetry</span>
+                  <span>
+                    Source: {weatherData?.sourceName || 'Open-Meteo API'} · {weatherData?.lastUpdatedFormatted || 'Checking...'}
+                  </span>
+                  <span className="text-[#45664F] font-semibold font-mono">
+                    {weatherData?.status === 'LIVE' ? 'Verified Feed' : 'Fallback Mode'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -310,6 +353,7 @@ export const App: React.FC = () => {
               onUpdateParams={setSimulationParams}
               baselineAssessment={baselineAssessment}
               simulatedAssessment={activeAssessment}
+              observedWeather={weatherData}
             />
 
             {/* Map & Risk Panel in Simulator Mode for Instant Visual Feedback */}

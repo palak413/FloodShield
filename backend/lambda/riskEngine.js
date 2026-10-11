@@ -104,7 +104,7 @@ export function calculateFloodRisk(location, params) {
     explanation,
     precautions,
     provenance: {
-      engine: 'AWS Lambda (Node.js 20 - ap-south-1)',
+      engine: 'AWS Lambda (Node.js 22 - ap-south-1)',
       mode: 'AWS_LAMBDA',
       region: process.env.AWS_REGION || 'ap-south-1',
       runtime: `Node.js ${process.version}`,
@@ -146,11 +146,11 @@ function generatePrecautions(location, params, category) {
   if (category === 'HIGH') {
     if (location.depressionIndex >= 8) {
       recommendations.push(
-        'AVOID UNDERPASS TRANSIT: Divert via elevated arterial routes (e.g. flyovers) to avoid submerged vehicular stalls.'
+        'AVOID LOW-LYING UNDERPASS TRANSIT: Underpasses accumulate localized runoff rapidly; delay transit and check official Mumbai Traffic Police advisories rather than risking vehicular stall.'
       );
     } else {
       recommendations.push(
-        'SUSPEND GROUND-LEVEL LOGISTICS: Severe sheet inundation expected along major thoroughfares.'
+        'SUSPEND GROUND-LEVEL LOGISTICS: High probability of localized street waterlogging exceeding curb depth.'
       );
     }
     recommendations.push(
@@ -159,7 +159,7 @@ function generatePrecautions(location, params, category) {
     recommendations.push(
       params.tideLevel === 'SPRING_HIGH_TIDE'
         ? 'TIDAL PEAK ADVISORY: Outfall gates closed during high tide; expect peak water stagnation for the next 2-3 hours.'
-        : `MONITOR BMC DISASTER HELPLINE: Check ward ${location.ward || 'local'} municipal updates before travel.`
+        : `MONITOR BMC DISASTER HELPLINE: Check ward ${location.ward || 'local'} municipal updates before essential travel.`
     );
   } else if (category === 'MODERATE') {
     recommendations.push(
@@ -175,7 +175,7 @@ function generatePrecautions(location, params, category) {
     );
   } else {
     recommendations.push(
-      'NORMAL ROUTINE PERMITTED: Roadways and drainage infrastructure operating within nominal safety thresholds.'
+      'MONITOR ROUTINE PASSABILITY: Precipitation remains within baseline municipal drainage capacities (BMC 25 mm/h design); exercise normal monsoon vigilance.'
     );
     recommendations.push(
       'CONTINUE RAIN MONITORING: Stay informed via weather alerts if cloudburst activity approaches southern/suburban Mumbai.'
