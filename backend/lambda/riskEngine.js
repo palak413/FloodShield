@@ -106,6 +106,9 @@ export function calculateFloodRisk(location, params) {
     provenance: {
       engine: 'AWS Lambda (Node.js 20 - ap-south-1)',
       mode: 'AWS_LAMBDA',
+      region: process.env.AWS_REGION || 'ap-south-1',
+      runtime: `Node.js ${process.version}`,
+      serverTimestamp: new Date().toISOString(),
       timestamp: new Date().toISOString(),
     },
   };

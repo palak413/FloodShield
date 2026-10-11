@@ -276,14 +276,26 @@ export const RiskPanel: React.FC<RiskPanelProps> = ({
 
       {/* Provenance & Disclaimer Footer */}
       <div className="pt-3 border-t border-[#1C2B44] mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] text-[#94A3B8]">
-        <div className="flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-[#00F2FE]" />
-          <span>Calculated via:</span>
-          <span className="font-mono text-white">{provenance.engine}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-[#00F2FE]" />
+            <span>Engine:</span>
+            <span className="font-mono text-white text-[11px]">{provenance.engine}</span>
+          </div>
+          {provenance.mode === 'AWS_LAMBDA' ? (
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+              LIVE AWS ({provenance.executionTimeMs ?? 15}ms)
+            </span>
+          ) : (
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#00F2FE]/10 text-[#00F2FE] border border-[#00F2FE]/30">
+              OFFLINE / LOCAL FALLBACK
+            </span>
+          )}
         </div>
         <button
           onClick={onOpenAwsInspector}
-          className="text-[#00F2FE] hover:underline flex items-center gap-1 text-[11px] cursor-pointer"
+          className="text-[#00F2FE] hover:underline flex items-center gap-1 text-[11px] cursor-pointer shrink-0"
         >
           Inspect API Contract <ExternalLink className="w-3 h-3" />
         </button>

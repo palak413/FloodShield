@@ -12,7 +12,7 @@ import {
   LiveWeatherData,
 } from './types/flood';
 import { calculateFloodRisk } from './services/riskEngine';
-import { checkAwsHealth, ApiStatus } from './services/api';
+import { checkAwsHealth, requestRiskAssessment, ApiStatus } from './services/api';
 import { fetchLiveMumbaiWeather } from './services/weatherApi';
 import {
   CloudRain,
@@ -80,31 +80,49 @@ export const App: React.FC = () => {
     refreshApiHealth();
   }, [loadWeather, refreshApiHealth]);
 
+  // State for active assessment
+  const [activeAssessment, setActiveAssessment] = useState<RiskAssessmentResult>(() =>
+    calculateFloodRisk(MUMBAI_LOCATIONS[0], DEFAULT_SIMULATION_PARAMS, 'LOCAL_FALLBACK')
+  );
+
   // Compute assessments for all locations based on current simulation params
   const assessmentsMap = useMemo(() => {
     const map: Record<string, RiskAssessmentResult> = {};
     locations.forEach((loc) => {
-      map[loc.id] = calculateFloodRisk(
-        loc,
-        simulationParams,
-        apiStatus.isAwsLive ? 'AWS_LAMBDA' : 'LOCAL_FALLBACK',
-        apiStatus.endpointUrl
-      );
+      if (loc.id === selectedLocation.id && activeAssessment) {
+        map[loc.id] = activeAssessment;
+      } else {
+        map[loc.id] = calculateFloodRisk(loc, simulationParams, 'LOCAL_FALLBACK');
+      }
     });
     return map;
-  }, [locations, simulationParams, apiStatus]);
+  }, [locations, simulationParams, selectedLocation.id, activeAssessment]);
 
-  // Active assessment for currently selected location
-  const activeAssessment = useMemo(() => {
-    return (
-      assessmentsMap[selectedLocation.id] ||
-      calculateFloodRisk(selectedLocation, simulationParams)
-    );
-  }, [assessmentsMap, selectedLocation, simulationParams]);
+  // Update active assessment whenever selectedLocation, params, or API status changes
+  useEffect(() => {
+    let isCancelled = false;
+
+    // Immediately update with local calculation to avoid UI latency
+    const localResult = calculateFloodRisk(selectedLocation, simulationParams, 'LOCAL_FALLBACK');
+    setActiveAssessment(localResult);
+
+    // If API is available or configured, query the server endpoint
+    if (apiStatus.isAwsLive || import.meta.env.VITE_AWS_API_URL) {
+      requestRiskAssessment(selectedLocation, simulationParams).then((res) => {
+        if (!isCancelled && res) {
+          setActiveAssessment(res);
+        }
+      });
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedLocation, simulationParams, apiStatus.isAwsLive]);
 
   // Baseline assessment for currently selected location
   const baselineAssessment = useMemo(() => {
-    return calculateFloodRisk(selectedLocation, BASELINE_PARAMS);
+    return calculateFloodRisk(selectedLocation, BASELINE_PARAMS, 'LOCAL_FALLBACK');
   }, [selectedLocation]);
 
   return (

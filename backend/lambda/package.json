@@ -1,0 +1,6 @@
+{
+  "name": "floodshield-lambda",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "FloodShield Monsoon Risk Assessment AWS Lambda Handler"
+}
