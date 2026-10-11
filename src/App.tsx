@@ -48,11 +48,11 @@ export const App: React.FC = () => {
   const [isWeatherLoading, setIsWeatherLoading] = useState<boolean>(false);
 
   // API Health status
-  const [apiStatus, setApiStatus] = useState<ApiStatus>({
+  const [apiStatus, setApiStatus] = useState<ApiStatus>(() => ({
     isAwsLive: false,
     endpointUrl: import.meta.env.VITE_AWS_API_URL || 'Local Heuristic Engine',
     lastChecked: new Date().toLocaleTimeString('en-IN'),
-  });
+  }));
 
   // Fetch weather and API health on initial load
   const loadWeather = useCallback(async () => {
@@ -249,9 +249,9 @@ export const App: React.FC = () => {
                         }`}
                       >
                         {weatherData.status === 'LIVE'
-                          ? 'LIVE TELEMETRY'
+                          ? 'LIVE'
                           : weatherData.status === 'SAMPLE_FALLBACK'
-                          ? 'SAMPLE DATA'
+                          ? 'SAMPLE'
                           : 'UNAVAILABLE'}
                       </span>
                     )}
@@ -342,7 +342,7 @@ export const App: React.FC = () => {
                     Source: {weatherData?.sourceName || 'Open-Meteo API'} · {weatherData?.observedAtFormatted ? `Observed: ${weatherData.observedAtFormatted}` : weatherData?.lastUpdatedFormatted || 'Checking...'}
                   </span>
                   <span className="text-[#45664F] font-semibold font-mono shrink-0">
-                    {weatherData?.status === 'LIVE' ? 'Live Telemetry' : 'Sample Fallback'}
+                    {weatherData?.status === 'LIVE' ? 'LIVE' : weatherData?.status === 'SAMPLE_FALLBACK' ? 'SAMPLE' : 'UNAVAILABLE'}
                   </span>
                 </div>
               </div>

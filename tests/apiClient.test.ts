@@ -151,6 +151,37 @@ describe('Frontend API Client & Provenance Integrity Tests', () => {
       expect(result.provenance.mode).toBe('LOCAL_FALLBACK');
       expect(result.totalScore).toBeGreaterThanOrEqual(0);
     });
+
+    it('falls back cleanly to local calculation when server returns non-JSON or HTML 200 response', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => {
+          throw new SyntaxError('Unexpected token < in JSON at position 0');
+        },
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const result = await requestRiskAssessment(sampleLocation, sampleParams);
+      expect(result.provenance.mode).toBe('LOCAL_FALLBACK');
+      expect(result.provenance.engine).toContain('Local Heuristic Engine');
+    });
+
+    it('falls back to local calculation when server response has totalScore > 100', async () => {
+      const invalidScorePayload = {
+        ...validAwsResult,
+        totalScore: 110,
+      };
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => invalidScorePayload,
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const result = await requestRiskAssessment(sampleLocation, sampleParams);
+      expect(result.provenance.mode).toBe('LOCAL_FALLBACK');
+    });
   });
 
   describe('checkAwsHealth client behavior', () => {

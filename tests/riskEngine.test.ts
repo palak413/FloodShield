@@ -82,8 +82,8 @@ describe('FloodShield Deterministic Risk Engine', () => {
   it('ensures output scores stay bounded within [0, 100]', () => {
     // Test with maximum extreme parameters
     const maxParams: SimulationParams = {
-      rainfallMmPerHour: 200,
-      durationHours: 24,
+      rainfallMmPerHour: 300,
+      durationHours: 72,
       tideLevel: 'SPRING_HIGH_TIDE',
       drainageCondition: 'SILTED',
     };
@@ -91,5 +91,49 @@ describe('FloodShield Deterministic Risk Engine', () => {
     const result = calculateFloodRisk(milanSubway, maxParams);
     expect(result.totalScore).toBeLessThanOrEqual(100);
     expect(result.totalScore).toBeGreaterThanOrEqual(0);
+  });
+
+  it('handles boundary extremes for rainfall (0 mm/h to 300 mm/h) and duration (1h to 72h)', () => {
+    const minParams: SimulationParams = {
+      rainfallMmPerHour: 0,
+      durationHours: 1,
+      tideLevel: 'LOW_TIDE',
+      drainageCondition: 'OPTIMAL',
+    };
+    const minResult = calculateFloodRisk(milanSubway, minParams);
+    expect(minResult.factors.precipitationScore).toBe(0);
+    expect(minResult.factors.surfaceRunoffScore).toBe(0);
+
+    const maxParams: SimulationParams = {
+      rainfallMmPerHour: 300,
+      durationHours: 72,
+      tideLevel: 'SPRING_HIGH_TIDE',
+      drainageCondition: 'SILTED',
+    };
+    const maxResult = calculateFloodRisk(milanSubway, maxParams);
+    expect(maxResult.factors.precipitationScore).toBe(40);
+    expect(maxResult.factors.surfaceRunoffScore).toBe(14); // 15 * 0.95 rounded
+    expect(maxResult.totalScore).toBeGreaterThanOrEqual(90);
+  });
+
+  it('verifies safety recommendations avoid unsupported assertions and use conditional language', () => {
+    const extremeParams: SimulationParams = {
+      rainfallMmPerHour: 100,
+      durationHours: 4,
+      tideLevel: 'SPRING_HIGH_TIDE',
+      drainageCondition: 'SILTED',
+    };
+    const result = calculateFloodRisk(milanSubway, extremeParams);
+
+    // Verify all precautions use conditional language
+    result.precautions.forEach((precaution) => {
+      expect(precaution).not.toContain('Outfall gates closed during high tide');
+      expect(precaution).not.toContain('2-3 hours');
+      expect(precaution).not.toContain('30-45 minutes');
+    });
+
+    // Verify references to official advisories
+    const allPrecautionsText = result.precautions.join(' ');
+    expect(allPrecautionsText).toMatch(/Mumbai Traffic Police|BMC Disaster Management/);
   });
 });

@@ -6,7 +6,7 @@
 [![Location](https://img.shields.io/badge/Target-Mumbai%2C%20India-344638?style=flat-square)](#)
 [![AWS Runtime](https://img.shields.io/badge/AWS-Lambda%20Node.js%2022%20(ap--south--1)-E5EBDD?style=flat-square&logoColor=344638)](#)
 [![Map Style](https://img.shields.io/badge/Map-CartoDB%20Positron%20Light-45664F?style=flat-square)](#)
-[![Tests](https://img.shields.io/badge/Vitest-33%2F33%20Passing-45664F?style=flat-square)](#)
+[![Tests](https://img.shields.io/badge/Vitest-43%2F43%20Passing-45664F?style=flat-square)](#)
 
 ---
 
@@ -66,7 +66,7 @@ $$\text{Risk Score} = \min(100, P_{\text{load}} + T_{\text{topo}} + H_{\text{tid
 ### Classification Bands
 - 🟢 **LOW RISK (0 – 39)**: Rainfall remains within nominal municipal drainage design limits; exercise normal monsoon vigilance.
 - 🟡 **MODERATE RISK (40 – 69)**: Elevated cautionary status; slow vehicle speeds; monitor underpass passability markers.
-- 🔴 **HIGH RISK (70 – 100)**: Severe waterlogging susceptibility; avoid low-lying underpasses; relocate vehicles from basements; outfall gates locked.
+- 🔴 **HIGH RISK (70 – 100)**: Severe waterlogging susceptibility; avoid low-lying underpasses; exercise parking precautions; potential tidal lock restricts outfall drainage; heed official updates.
 
 ---
 
@@ -112,7 +112,7 @@ npm install
 ```bash
 npm test
 ```
-Executes 33 comprehensive unit and integration tests across 4 test suites:
+Executes 43 comprehensive unit and integration tests across 4 test suites:
 - `tests/riskEngine.test.ts`: Deterministic risk calculation, boundary checks, factor scoring.
 - `tests/lambdaHandler.test.ts`: Lambda handler routing, CORS, strict validation of missing fields, non-finite numbers, invalid ranges, and unsupported enums.
 - `tests/weatherApi.test.ts`: Open-Meteo telemetry parsing, offline sample fallback tagging, network failure handling.

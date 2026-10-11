@@ -3,8 +3,8 @@
  */
 
 export function calculateFloodRisk(location, params) {
-  const rainfallMmPerHour = Math.max(0, Math.min(250, Number(params.rainfallMmPerHour) || 0));
-  const durationHours = Math.max(1, Math.min(48, Number(params.durationHours) || 1));
+  const rainfallMmPerHour = Math.max(0, Math.min(300, Number(params.rainfallMmPerHour) || 0));
+  const durationHours = Math.max(1, Math.min(72, Number(params.durationHours) || 1));
   const tideLevel = params.tideLevel || 'LOW_TIDE';
   const drainageCondition = params.drainageCondition || 'STANDARD';
 
@@ -135,7 +135,7 @@ function generateExplanation(location, params, factors, score, category) {
   }
 
   if (params.tideLevel === 'SPRING_HIGH_TIDE') {
-    parts.push(`Spring High Tide prevents Arabian Sea gravity outfall; floodgates remain shut.`);
+    parts.push(`Spring High Tide can restrict gravity outfall into the Arabian Sea when seawater levels rise above discharge thresholds.`);
   }
 
   return parts.join(' ');
@@ -150,20 +150,20 @@ function generatePrecautions(location, params, category) {
       );
     } else {
       recommendations.push(
-        'SUSPEND GROUND-LEVEL LOGISTICS: High probability of localized street waterlogging exceeding curb depth.'
+        'EXERCISE HIGH CAUTION ON ROADWAYS: Elevated probability of localized street waterlogging exceeding curb depth; consult municipal ward bulletins before transit.'
       );
     }
     recommendations.push(
-      'VEHICLE PRESERVATION: Relocate parked vehicles from basements and ground lots to upper podium decks immediately.'
+      'VEHICLE PRESERVATION ADVISORY: Consider moving parked vehicles from low-lying basements and ground lots to elevated parking decks where feasible.'
     );
     recommendations.push(
       params.tideLevel === 'SPRING_HIGH_TIDE'
-        ? 'TIDAL PEAK ADVISORY: Outfall gates closed during high tide; expect peak water stagnation for the next 2-3 hours.'
+        ? 'TIDAL LOCK ADVISORY: Stormwater outfall gates may close during spring high tides to prevent seawater backflow, which can slow drainage. Consult BMC Disaster Management updates.'
         : `MONITOR BMC DISASTER HELPLINE: Check ward ${location.ward || 'local'} municipal updates before essential travel.`
     );
   } else if (category === 'MODERATE') {
     recommendations.push(
-      'EXERCISE TRANSIT CAUTION: Slow vehicle speeds due to reduced visibility and intermittent road water accumulation.'
+      'EXERCISE TRANSIT CAUTION: Reduce vehicle speeds and maintain safe braking distances due to potential wet pavement and intermittent street water accumulation.'
     );
     recommendations.push(
       location.depressionIndex >= 8
@@ -171,7 +171,7 @@ function generatePrecautions(location, params, category) {
         : 'CLEAR LOCAL DRAINS: Ensure storm grates around commercial/residential boundaries are free from debris blockage.'
     );
     recommendations.push(
-      'BUFFER COMMUTE TIMES: Allow 30-45 minutes additional travel time across suburban rail and road corridors.'
+      'ALLOW COMMUTE BUFFER: Commute delays are common during localized waterlogging; check suburban rail and traffic police updates before traveling.'
     );
   } else {
     recommendations.push(

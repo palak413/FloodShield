@@ -16,7 +16,7 @@ This script is structured for an impactful, high-energy 3-minute presentation fo
 
 > *"Here on the FloodShield console, we have modeled 8 grounded vulnerability hotspots across the Mumbai Metropolitan Region using real coordinates, elevation data, and municipal ward profiles.*
 > 
-> *Notice Milan Subway: It has a depression index of 10 out of 10—a classic saucer underpass. Under a baseline monsoon shower of 25 mm/h, it registers a Moderate Risk score of 48 out of 100. Our risk panel breaks down exactly why: Topographical saucer depth contributes 21 points, while precipitation load contributes 14 points. Notice our 3 clear, context-specific recommendations: avoid underpass transit, inspect depth markers, and buffer commute times."*
+> *Notice Milan Subway: It has a depression index of 10 out of 10—a classic saucer underpass. Under a baseline monsoon shower of 25 mm/h, it registers a Moderate Risk score of 52 out of 100. Our risk panel breaks down exactly why: Topographical saucer depth contributes 22 points, surface runoff contributes 12 points, precipitation load contributes 10 points, and tidal hydraulics contributes 8 points. Notice our 3 clear, context-specific recommendations: avoid underpass transit, inspect depth markers, and buffer commute times."*
 
 ---
 
@@ -27,9 +27,9 @@ This script is structured for an impactful, high-energy 3-minute presentation fo
 > 
 > *Suppose a sudden convective cloudburst strikes western Mumbai at 85 mm per hour, lasting 4 hours, and synchronizing with an Arabian Sea Spring High Tide above 4.5 meters.*
 > 
-> *Watch what happens in real time: The side-by-side impact matrix shows an immediate escalation of **+43 Risk Points**, jumping from 48 to **91 out of 100 — High Risk**.*
+> *Watch what happens in real time: The side-by-side impact matrix shows an immediate escalation of **+40 Risk Points**, jumping from 52 to **92 out of 100 — High Risk**.*
 > 
-> *Our engine clearly explains the mechanics: precipitation volume has blown past the BMC design threshold of 25–50 mm/h, and the tidal lock shuts outfall gates, trapping runoff within the underpass."*
+> *Our engine clearly explains the mechanics: precipitation volume has blown past the BMC design threshold of 25–50 mm/h, and the tidal lock can restrict gravity outfall into the Arabian Sea, slowing stormwater drainage within the underpass."*
 
 ---
 
@@ -37,9 +37,9 @@ This script is structured for an impactful, high-energy 3-minute presentation fo
 *(Action: Scroll down to view the 3 updated recommendations and ethical disclaimer)*
 
 > *"Notice how the recommendations instantly adapt:
-> 1. 'AVOID LOW-LYING UNDERPASS TRANSIT: Underpasses accumulate localized runoff rapidly; delay transit and heed official Mumbai Traffic Police advisories.'
-> 2. 'VEHICLE PRESERVATION: Relocate parked vehicles to upper podium decks immediately.'
-> 3. 'TIDAL PEAK ADVISORY: Outfall gates closed during high tide; expect peak water stagnation for the next 2-3 hours.'
+> 1. 'AVOID LOW-LYING UNDERPASS TRANSIT: Underpasses accumulate localized runoff rapidly; delay transit and check official Mumbai Traffic Police advisories.'
+> 2. 'VEHICLE PRESERVATION ADVISORY: Consider moving parked vehicles from low-lying basements and ground lots to elevated parking decks where feasible.'
+> 3. 'TIDAL LOCK ADVISORY: Stormwater outfall gates may close during spring high tides to prevent seawater backflow, which can slow drainage. Consult BMC Disaster Management updates.'
 > 
 > And critically, as an environmental intelligence product, we maintain total honesty: we explicitly badge this as a deterministic heuristic model, never falsely claiming to be an unverified live hydrodynamic sensor."*
 

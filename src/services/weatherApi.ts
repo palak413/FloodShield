@@ -68,8 +68,16 @@ export async function fetchLiveMumbaiWeather(
     }
 
     const data = await res.json();
-    const current = data.current || {};
-    const hourly = data.hourly || {};
+    if (!data || typeof data !== 'object' || !data.current || typeof data.current !== 'object') {
+      throw new Error('Malformed weather payload: missing current observation telemetry.');
+    }
+
+    const current = data.current;
+    if (typeof current.time !== 'string' || !Number.isFinite(current.temperature_2m)) {
+      throw new Error('Malformed weather telemetry: missing temperature or timestamp.');
+    }
+
+    const hourly = data.hourly && typeof data.hourly === 'object' ? data.hourly : {};
 
     const code = current.weather_code ?? 0;
     const weatherDescription = WMO_CODES[code] || 'Monsoon Conditions';

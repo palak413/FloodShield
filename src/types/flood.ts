@@ -53,6 +53,9 @@ export interface RiskAssessmentResult {
     engine: string;
     mode: AssessmentProvenanceMode;
     timestamp: string;
+    region?: string;
+    runtime?: string;
+    serverTimestamp?: string;
     executionTimeMs?: number;
     endpointUrl?: string;
   };

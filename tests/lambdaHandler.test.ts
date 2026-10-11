@@ -220,4 +220,68 @@ describe('AWS Lambda Handler Execution & Validation Tests', () => {
     const body = JSON.parse(response.body);
     expect(body.error).toContain('params.rainfallMmPerHour must be a finite number');
   });
+
+  it('accepts exact boundary limits for rainfall (0 mm/h and 300 mm/h) and duration (1h and 72h)', async () => {
+    // Upper boundary test
+    const maxBoundaryParams = {
+      rainfallMmPerHour: 300,
+      durationHours: 72,
+      tideLevel: 'SPRING_HIGH_TIDE',
+      drainageCondition: 'SILTED',
+    };
+    const maxEvent = {
+      httpMethod: 'POST',
+      path: '/assess',
+      body: JSON.stringify({
+        location: validLocation,
+        params: maxBoundaryParams,
+      }),
+    };
+    const maxResponse = await handler(maxEvent);
+    expect(maxResponse.statusCode).toBe(200);
+    const maxBody = JSON.parse(maxResponse.body);
+    expect(maxBody.inputParameters.rainfallMmPerHour).toBe(300);
+    expect(maxBody.inputParameters.durationHours).toBe(72);
+
+    // Lower boundary test
+    const minBoundaryParams = {
+      rainfallMmPerHour: 0,
+      durationHours: 1,
+      tideLevel: 'LOW_TIDE',
+      drainageCondition: 'OPTIMAL',
+    };
+    const minEvent = {
+      httpMethod: 'POST',
+      path: '/assess',
+      body: JSON.stringify({
+        location: validLocation,
+        params: minBoundaryParams,
+      }),
+    };
+    const minResponse = await handler(minEvent);
+    expect(minResponse.statusCode).toBe(200);
+    const minBody = JSON.parse(minResponse.body);
+    expect(minBody.inputParameters.rainfallMmPerHour).toBe(0);
+    expect(minBody.inputParameters.durationHours).toBe(1);
+  });
+
+  it('rejects array request body or missing params with 400 Bad Request', async () => {
+    const arrayEvent = {
+      httpMethod: 'POST',
+      path: '/assess',
+      body: JSON.stringify([{ location: validLocation, params: validParams }]),
+    };
+    const arrayResponse = await handler(arrayEvent);
+    expect(arrayResponse.statusCode).toBe(400);
+
+    const missingParamsEvent = {
+      httpMethod: 'POST',
+      path: '/assess',
+      body: JSON.stringify({ location: validLocation }),
+    };
+    const missingResponse = await handler(missingParamsEvent);
+    expect(missingResponse.statusCode).toBe(400);
+    const missingBody = JSON.parse(missingResponse.body);
+    expect(missingBody.error).toContain('Missing or invalid "params"');
+  });
 });

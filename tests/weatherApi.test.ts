@@ -81,4 +81,18 @@ describe('Weather API & Meteorological Fallback Integrity', () => {
     expect(result.status).toBe('SAMPLE_FALLBACK');
     expect(result.errorMessage).toContain('500');
   });
+
+  it('fetchLiveMumbaiWeather falls back cleanly when payload lacks current or hourly weather structures', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ unexpectedStructure: true }), // Missing current and hourly
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const result = await fetchLiveMumbaiWeather();
+    expect(result.status).toBe('SAMPLE_FALLBACK');
+    expect(result.precipitationMm).toBe(0);
+    expect(result.sourceName).toContain('Offline');
+  });
 });
