@@ -5,10 +5,8 @@ import {
   Activity,
   Layers,
   Sliders,
-  CheckCircle2,
   Server,
   RefreshCw,
-  ExternalLink,
 } from 'lucide-react';
 import { LocationGeoData, LiveWeatherData } from '../types/flood';
 import { ApiStatus } from '../services/api';
@@ -39,36 +37,35 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAwsInspector,
 }) => {
   return (
-    <header className="sticky top-0 z-40 bg-[#09111F]/90 backdrop-blur-md border-b border-[#1C2B44] px-4 lg:px-8 py-3 transition-colors">
+    <header className="sticky top-0 z-40 bg-[#FFFFFF]/90 backdrop-blur-md border-b border-[#DDE3D8] px-4 lg:px-8 py-3 transition-colors">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Brand & Subtitle */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
           <div className="flex items-center gap-2.5">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#00F2FE]/20 to-[#132035] border border-[#00F2FE]/40 shadow-[0_0_15px_rgba(0,242,254,0.15)]">
-              <ShieldAlert className="w-5 h-5 text-[#00F2FE]" />
-              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#00F2FE] animate-ping" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#E5EBDD] border border-[#DDE3D8] text-[#45664F] shadow-xs">
+              <ShieldAlert className="w-5 h-5 text-[#45664F]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-lg text-white font-mono">FLOODSHIELD</span>
-                <span className="px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase rounded bg-[#00F2FE]/10 text-[#00F2FE] border border-[#00F2FE]/30">
+                <span className="font-extrabold tracking-tight text-lg text-[#344638] font-mono">FLOODSHIELD</span>
+                <span className="px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded bg-[#E5EBDD] text-[#45664F] border border-[#DDE3D8]">
                   MUMBAI
                 </span>
               </div>
-              <p className="text-[11px] font-medium tracking-wider text-[#94A3B8] uppercase">
+              <p className="text-[11px] font-semibold tracking-wider text-[#737F71] uppercase">
                 Monsoon Intelligence Console
               </p>
             </div>
           </div>
 
           {/* Mobile Tab Switcher */}
-          <div className="flex md:hidden bg-[#0E1726] p-1 rounded-lg border border-[#1C2B44]">
+          <div className="flex md:hidden bg-[#E5EBDD] p-1 rounded-lg border border-[#DDE3D8]">
             <button
               onClick={() => onTabChange('overview')}
               className={`px-2.5 py-1 text-xs font-medium rounded transition-all ${
                 activeTab === 'overview'
-                  ? 'bg-[#1C2B44] text-[#00F2FE]'
-                  : 'text-[#94A3B8]'
+                  ? 'bg-[#FFFFFF] text-[#45664F] shadow-xs font-semibold'
+                  : 'text-[#737F71]'
               }`}
             >
               Overview
@@ -77,8 +74,8 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => onTabChange('simulator')}
               className={`px-2.5 py-1 text-xs font-medium rounded transition-all ${
                 activeTab === 'simulator'
-                  ? 'bg-[#1C2B44] text-[#00F2FE]'
-                  : 'text-[#94A3B8]'
+                  ? 'bg-[#FFFFFF] text-[#45664F] shadow-xs font-semibold'
+                  : 'text-[#737F71]'
               }`}
             >
               Simulator
@@ -88,19 +85,19 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Location Selector & Weather Indicator */}
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-between md:justify-end">
-          {/* Quick Location Picker */}
-          <div className="relative flex items-center bg-[#0E1726] border border-[#1C2B44] rounded-lg px-2.5 py-1.5">
-            <Layers className="w-3.5 h-3.5 text-[#00F2FE] mr-2 shrink-0" />
+          {/* Location Picker */}
+          <div className="relative flex items-center bg-[#FFFFFF] border border-[#DDE3D8] rounded-lg px-2.5 py-1.5 shadow-2xs hover:border-[#45664F]/50 transition-colors">
+            <Layers className="w-3.5 h-3.5 text-[#45664F] mr-2 shrink-0" />
             <select
               value={selectedLocation.id}
               onChange={(e) => {
                 const loc = locations.find((l) => l.id === e.target.value);
                 if (loc) onSelectLocation(loc);
               }}
-              className="bg-transparent text-xs text-[#F1F5F9] focus:outline-none cursor-pointer pr-2 font-medium"
+              className="bg-transparent text-xs text-[#344638] focus:outline-none cursor-pointer pr-2 font-medium"
             >
               {locations.map((loc) => (
-                <option key={loc.id} value={loc.id} className="bg-[#0E1726] text-[#F1F5F9]">
+                <option key={loc.id} value={loc.id} className="bg-[#FFFFFF] text-[#344638]">
                   {loc.name} ({loc.ward})
                 </option>
               ))}
@@ -109,32 +106,32 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Live Mumbai Weather Badge */}
           {weatherData && (
-            <div className="hidden sm:flex items-center gap-2 bg-[#0E1726] border border-[#1C2B44] rounded-lg px-2.5 py-1.5 text-xs">
-              <CloudRain className="w-3.5 h-3.5 text-[#00F2FE]" />
-              <span className="text-[#F1F5F9] font-mono">{weatherData.temperatureC}°C</span>
-              <span className="text-[#94A3B8] text-[11px]">|</span>
-              <span className="text-[#94A3B8] text-[11px] truncate max-w-[110px]" title={weatherData.weatherDescription}>
+            <div className="hidden sm:flex items-center gap-2 bg-[#FFFFFF] border border-[#DDE3D8] rounded-lg px-2.5 py-1.5 text-xs shadow-2xs">
+              <CloudRain className="w-3.5 h-3.5 text-[#45664F]" />
+              <span className="text-[#344638] font-mono font-semibold">{weatherData.temperatureC}°C</span>
+              <span className="text-[#DDE3D8]">|</span>
+              <span className="text-[#737F71] text-[11px] truncate max-w-[110px]" title={weatherData.weatherDescription}>
                 {weatherData.precipitationMm > 0 ? `${weatherData.precipitationMm} mm/h` : weatherData.weatherDescription}
               </span>
               <button
                 onClick={onRefreshWeather}
                 title="Refresh live telemetry"
                 disabled={isWeatherLoading}
-                className="text-[#94A3B8] hover:text-[#00F2FE] transition-colors ml-0.5"
+                className="text-[#737F71] hover:text-[#45664F] transition-colors ml-0.5 cursor-pointer"
               >
-                <RefreshCw className={`w-3 h-3 ${isWeatherLoading ? 'animate-spin text-[#00F2FE]' : ''}`} />
+                <RefreshCw className={`w-3 h-3 ${isWeatherLoading ? 'animate-spin text-[#45664F]' : ''}`} />
               </button>
             </div>
           )}
 
           {/* Desktop Tab Switcher */}
-          <div className="hidden md:flex bg-[#0E1726] p-1 rounded-lg border border-[#1C2B44]">
+          <div className="hidden md:flex bg-[#E5EBDD] p-1 rounded-lg border border-[#DDE3D8]">
             <button
               onClick={() => onTabChange('overview')}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-md transition-all cursor-pointer ${
                 activeTab === 'overview'
-                  ? 'bg-[#1C2B44] text-[#00F2FE] shadow-[0_0_10px_rgba(0,242,254,0.1)]'
-                  : 'text-[#94A3B8] hover:text-white'
+                  ? 'bg-[#FFFFFF] text-[#45664F] font-semibold shadow-xs'
+                  : 'text-[#737F71] hover:text-[#344638]'
               }`}
             >
               <Activity className="w-3.5 h-3.5" />
@@ -142,10 +139,10 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => onTabChange('simulator')}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-md transition-all cursor-pointer ${
                 activeTab === 'simulator'
-                  ? 'bg-[#1C2B44] text-[#00F2FE] shadow-[0_0_10px_rgba(0,242,254,0.1)]'
-                  : 'text-[#94A3B8] hover:text-white'
+                  ? 'bg-[#FFFFFF] text-[#45664F] font-semibold shadow-xs'
+                  : 'text-[#737F71] hover:text-[#344638]'
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />
@@ -156,20 +153,20 @@ export const Header: React.FC<HeaderProps> = ({
           {/* AWS Cloud Architecture & Diagnostic Pill */}
           <button
             onClick={onOpenAwsInspector}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all cursor-pointer shadow-2xs ${
               apiStatus.isAwsLive
-                ? 'bg-[#10B981]/10 border-[#10B981]/30 text-[#10B981] hover:bg-[#10B981]/20'
-                : 'bg-[#0E1726] border-[#283D62] text-[#94A3B8] hover:border-[#00F2FE]/50 hover:text-white'
+                ? 'bg-[#E5EBDD] border-[#45664F]/40 text-[#45664F] hover:bg-[#D8E2CE]'
+                : 'bg-[#FFFFFF] border-[#DDE3D8] text-[#737F71] hover:border-[#45664F]/50 hover:text-[#344638]'
             }`}
             title="Inspect AWS Serverless Integration & Payload"
           >
-            <Server className="w-3.5 h-3.5" />
+            <Server className="w-3.5 h-3.5 text-[#45664F]" />
             <span className="font-mono text-[11px]">
               {apiStatus.isAwsLive ? 'AWS Lambda (Live)' : 'AWS Inspector'}
             </span>
             <div
               className={`w-1.5 h-1.5 rounded-full ${
-                apiStatus.isAwsLive ? 'bg-[#10B981] animate-pulse' : 'bg-[#00F2FE]'
+                apiStatus.isAwsLive ? 'bg-[#45664F] animate-pulse' : 'bg-[#737F71]'
               }`}
             />
           </button>

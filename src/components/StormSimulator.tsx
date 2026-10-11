@@ -5,13 +5,10 @@ import {
   Waves,
   Wrench,
   Sparkles,
-  ArrowRight,
   TrendingUp,
   TrendingDown,
   Minus,
   AlertCircle,
-  HelpCircle,
-  Play,
   RotateCcw,
 } from 'lucide-react';
 import {
@@ -21,7 +18,6 @@ import {
   TideLevel,
   DrainageCondition,
 } from '../types/flood';
-import { calculateFloodRisk } from '../services/riskEngine';
 
 interface StormSimulatorProps {
   locations: LocationGeoData[];
@@ -34,9 +30,6 @@ interface StormSimulatorProps {
 }
 
 export const StormSimulator: React.FC<StormSimulatorProps> = ({
-  locations,
-  selectedLocation,
-  onSelectLocation,
   currentParams,
   onUpdateParams,
   baselineAssessment,
@@ -69,27 +62,27 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
   };
 
   return (
-    <div className="bg-[#0E1726] border border-[#1C2B44] rounded-2xl p-6 shadow-2xl space-y-6">
+    <div className="bg-[#FFFFFF] border border-[#DDE3D8] rounded-2xl p-6 shadow-xs space-y-6">
       {/* Title & Heuristic Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-[#1C2B44]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-[#DDE3D8]">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#00F2FE]" />
+            <h2 className="text-xl font-bold text-[#344638] tracking-tight flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#45664F]" />
               Storm Scenario Simulator
             </h2>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#00F2FE]/10 text-[#00F2FE] border border-[#00F2FE]/30">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-[#E5EBDD] text-[#45664F] border border-[#DDE3D8]">
               Deterministic Engine
             </span>
           </div>
-          <p className="text-xs text-[#94A3B8] mt-1">
-            Simulate extreme precipitation and tidal gate scenarios against localized municipal drainage models.
+          <p className="text-xs text-[#737F71] mt-1">
+            Simulate precipitation and tidal gate scenarios against localized municipal drainage models.
           </p>
         </div>
 
         <button
           onClick={handleReset}
-          className="flex items-center gap-1.5 self-start md:self-auto px-3 py-1.5 rounded-lg bg-[#132035] border border-[#1C2B44] text-xs text-[#94A3B8] hover:text-[#00F2FE] hover:border-[#00F2FE]/30 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 self-start md:self-auto px-3 py-1.5 rounded-lg bg-[#F7F8F4] border border-[#DDE3D8] text-xs text-[#737F71] hover:text-[#45664F] hover:border-[#45664F]/50 transition-all cursor-pointer font-medium shadow-2xs"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Reset to Baseline
@@ -98,64 +91,64 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
 
       {/* Preset Scenarios Buttons */}
       <div>
-        <div className="text-xs font-semibold text-[#CBD5E1] uppercase tracking-wider mb-2">
+        <div className="text-xs font-bold text-[#344638] uppercase tracking-wider mb-2">
           Monsoon Scenario Presets
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <button
             onClick={() => handleApplyPreset(15, 1, 'LOW_TIDE', 'OPTIMAL')}
-            className="p-2.5 rounded-xl bg-[#132035] hover:bg-[#182842] border border-[#1C2B44] text-left transition-all hover:border-[#00F2FE]/40 group cursor-pointer"
+            className="p-3 rounded-xl bg-[#FFFFFF] hover:bg-[#F7F8F4] border border-[#DDE3D8] text-left transition-all hover:border-[#45664F]/50 group cursor-pointer shadow-2xs"
           >
-            <div className="text-xs font-semibold text-white group-hover:text-[#00F2FE]">
+            <div className="text-xs font-semibold text-[#344638] group-hover:text-[#45664F]">
               Light Showers
             </div>
-            <div className="text-[11px] text-[#94A3B8]">15 mm/h · Low Tide</div>
+            <div className="text-[11px] text-[#737F71]">15 mm/h · Low Tide</div>
           </button>
 
           <button
             onClick={() => handleApplyPreset(40, 2, 'MID_TIDE', 'STANDARD')}
-            className="p-2.5 rounded-xl bg-[#132035] hover:bg-[#182842] border border-[#1C2B44] text-left transition-all hover:border-[#00F2FE]/40 group cursor-pointer"
+            className="p-3 rounded-xl bg-[#FFFFFF] hover:bg-[#F7F8F4] border border-[#DDE3D8] text-left transition-all hover:border-[#45664F]/50 group cursor-pointer shadow-2xs"
           >
-            <div className="text-xs font-semibold text-white group-hover:text-[#00F2FE]">
+            <div className="text-xs font-semibold text-[#344638] group-hover:text-[#45664F]">
               Typical July Downpour
             </div>
-            <div className="text-[11px] text-[#94A3B8]">40 mm/h · Mid Tide</div>
+            <div className="text-[11px] text-[#737F71]">40 mm/h · Mid Tide</div>
           </button>
 
           <button
             onClick={() => handleApplyPreset(50, 3, 'SPRING_HIGH_TIDE', 'STANDARD')}
-            className="p-2.5 rounded-xl bg-[#132035] hover:bg-[#182842] border border-[#F59E0B]/30 text-left transition-all hover:border-[#F59E0B] group cursor-pointer"
+            className="p-3 rounded-xl bg-[#FFFFFF] hover:bg-[#F7F8F4] border border-[#9E8C58]/40 text-left transition-all hover:border-[#9E8C58] group cursor-pointer shadow-2xs"
           >
-            <div className="text-xs font-semibold text-white group-hover:text-[#F59E0B]">
+            <div className="text-xs font-semibold text-[#344638] group-hover:text-[#9E8C58]">
               High Tide Lockout
             </div>
-            <div className="text-[11px] text-[#94A3B8]">50 mm/h · Tide &gt;4.5m</div>
+            <div className="text-[11px] text-[#737F71]">50 mm/h · Tide &gt;4.5m</div>
           </button>
 
           <button
             onClick={() => handleApplyPreset(85, 4, 'SPRING_HIGH_TIDE', 'SILTED')}
-            className="p-2.5 rounded-xl bg-[#132035] hover:bg-[#182842] border border-[#F43F5E]/30 text-left transition-all hover:border-[#F43F5E] group cursor-pointer"
+            className="p-3 rounded-xl bg-[#FFFFFF] hover:bg-[#F7F8F4] border border-[#C87868]/40 text-left transition-all hover:border-[#C87868] group cursor-pointer shadow-2xs"
           >
-            <div className="text-xs font-semibold text-white group-hover:text-[#F43F5E]">
+            <div className="text-xs font-semibold text-[#344638] group-hover:text-[#C87868]">
               Severe Cloudburst
             </div>
-            <div className="text-[11px] text-[#94A3B8]">85 mm/h · Silted Drains</div>
+            <div className="text-[11px] text-[#737F71]">85 mm/h · Silted Drains</div>
           </button>
         </div>
       </div>
 
       {/* Interactive Controls & Sliders */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-[#09111F]/70 p-5 rounded-xl border border-[#1C2B44]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 bg-[#F7F8F4] p-5 rounded-xl border border-[#DDE3D8]">
         {/* Rainfall Intensity Slider */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-medium text-white flex items-center gap-1.5">
-              <CloudRain className="w-4 h-4 text-[#00F2FE]" />
+            <span className="font-semibold text-[#344638] flex items-center gap-1.5">
+              <CloudRain className="w-4 h-4 text-[#45664F]" />
               Rainfall Intensity
             </span>
-            <span className="font-mono text-base font-bold text-[#00F2FE]">
+            <span className="font-mono text-base font-bold text-[#45664F]">
               {currentParams.rainfallMmPerHour}{' '}
-              <span className="text-xs font-normal text-[#94A3B8]">mm / hour</span>
+              <span className="text-xs font-normal text-[#737F71]">mm / hour</span>
             </span>
           </div>
           <input
@@ -170,9 +163,9 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
                 rainfallMmPerHour: parseInt(e.target.value, 10),
               })
             }
-            className="w-full h-2 bg-[#1C2B44] rounded-lg appearance-none cursor-pointer accent-[#00F2FE]"
+            className="w-full h-2 bg-[#E5EBDD] rounded-lg appearance-none cursor-pointer accent-[#45664F]"
           />
-          <div className="flex justify-between text-[10px] text-[#94A3B8] font-mono">
+          <div className="flex justify-between text-[10px] text-[#737F71] font-mono">
             <span>0 mm/h (Dry)</span>
             <span>25 mm/h (BMC Cap)</span>
             <span>65 mm/h (Heavy)</span>
@@ -183,13 +176,13 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
         {/* Rainfall Duration Slider */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-medium text-white flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-[#00F2FE]" />
+            <span className="font-semibold text-[#344638] flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-[#45664F]" />
               Rainfall Duration
             </span>
-            <span className="font-mono text-base font-bold text-[#00F2FE]">
+            <span className="font-mono text-base font-bold text-[#45664F]">
               {currentParams.durationHours}{' '}
-              <span className="text-xs font-normal text-[#94A3B8]">hours</span>
+              <span className="text-xs font-normal text-[#737F71]">hours</span>
             </span>
           </div>
           <input
@@ -204,9 +197,9 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
                 durationHours: parseInt(e.target.value, 10),
               })
             }
-            className="w-full h-2 bg-[#1C2B44] rounded-lg appearance-none cursor-pointer accent-[#00F2FE]"
+            className="w-full h-2 bg-[#E5EBDD] rounded-lg appearance-none cursor-pointer accent-[#45664F]"
           />
-          <div className="flex justify-between text-[10px] text-[#94A3B8] font-mono">
+          <div className="flex justify-between text-[10px] text-[#737F71] font-mono">
             <span>1 hr</span>
             <span>6 hrs</span>
             <span>12 hrs</span>
@@ -216,8 +209,8 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
 
         {/* Arabian Sea Tide Level */}
         <div className="space-y-2">
-          <label className="text-xs font-medium text-white flex items-center gap-1.5">
-            <Waves className="w-4 h-4 text-[#00F2FE]" />
+          <label className="text-xs font-semibold text-[#344638] flex items-center gap-1.5">
+            <Waves className="w-4 h-4 text-[#45664F]" />
             Arabian Sea Tide Phase
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -234,14 +227,14 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
                     tideLevel: t.id as TideLevel,
                   })
                 }
-                className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer shadow-2xs ${
                   currentParams.tideLevel === t.id
-                    ? 'bg-[#1C2B44] border-[#00F2FE] text-white shadow-[0_0_10px_rgba(0,242,254,0.15)]'
-                    : 'bg-[#132035] border-[#1C2B44] text-[#94A3B8] hover:border-[#283D62]'
+                    ? 'bg-[#FFFFFF] border-[#45664F] text-[#344638] ring-1 ring-[#45664F]'
+                    : 'bg-[#FFFFFF] border-[#DDE3D8] text-[#737F71] hover:border-[#B8C4B3]'
                 }`}
               >
-                <div className="text-xs font-semibold">{t.label}</div>
-                <div className="text-[10px] text-[#94A3B8]">{t.sub}</div>
+                <div className="text-xs font-semibold text-[#344638]">{t.label}</div>
+                <div className="text-[10px] text-[#737F71]">{t.sub}</div>
               </button>
             ))}
           </div>
@@ -249,8 +242,8 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
 
         {/* Drainage Condition */}
         <div className="space-y-2">
-          <label className="text-xs font-medium text-white flex items-center gap-1.5">
-            <Wrench className="w-4 h-4 text-[#00F2FE]" />
+          <label className="text-xs font-semibold text-[#344638] flex items-center gap-1.5">
+            <Wrench className="w-4 h-4 text-[#45664F]" />
             Drainage & Pump Condition
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -267,14 +260,14 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
                     drainageCondition: d.id as DrainageCondition,
                   })
                 }
-                className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer shadow-2xs ${
                   currentParams.drainageCondition === d.id
-                    ? 'bg-[#1C2B44] border-[#00F2FE] text-white shadow-[0_0_10px_rgba(0,242,254,0.15)]'
-                    : 'bg-[#132035] border-[#1C2B44] text-[#94A3B8] hover:border-[#283D62]'
+                    ? 'bg-[#FFFFFF] border-[#45664F] text-[#344638] ring-1 ring-[#45664F]'
+                    : 'bg-[#FFFFFF] border-[#DDE3D8] text-[#737F71] hover:border-[#B8C4B3]'
                 }`}
               >
-                <div className="text-xs font-semibold">{d.label}</div>
-                <div className="text-[10px] text-[#94A3B8]">{d.sub}</div>
+                <div className="text-xs font-semibold text-[#344638]">{d.label}</div>
+                <div className="text-[10px] text-[#737F71]">{d.sub}</div>
               </button>
             ))}
           </div>
@@ -283,56 +276,56 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
 
       {/* Side-by-Side Comparison Matrix */}
       <div>
-        <div className="text-xs font-semibold text-[#CBD5E1] uppercase tracking-wider mb-3">
+        <div className="text-xs font-bold text-[#344638] uppercase tracking-wider mb-3">
           Side-by-Side Scenario Impact Analysis
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Baseline Scenario */}
-          <div className="p-4 rounded-xl bg-[#132035]/60 border border-[#1C2B44]">
-            <div className="flex items-center justify-between pb-2 border-b border-[#1C2B44]">
-              <span className="text-xs font-semibold text-[#94A3B8] uppercase">Baseline Benchmark</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#1C2B44] text-[#CBD5E1]">
+          <div className="p-4 rounded-xl bg-[#F7F8F4] border border-[#DDE3D8]">
+            <div className="flex items-center justify-between pb-2 border-b border-[#DDE3D8]">
+              <span className="text-xs font-bold text-[#737F71] uppercase">Baseline Benchmark</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#E5EBDD] text-[#45664F] font-semibold">
                 25 mm/h · 2h
               </span>
             </div>
             <div className="flex items-center justify-between my-3">
               <div>
-                <div className="text-2xl font-extrabold font-mono text-white">
+                <div className="text-2xl font-extrabold font-mono text-[#344638]">
                   {baselineAssessment.totalScore}
-                  <span className="text-xs text-[#94A3B8] font-normal"> / 100</span>
+                  <span className="text-xs text-[#737F71] font-normal"> / 100</span>
                 </div>
-                <div className="text-xs font-medium text-[#94A3B8] uppercase">
+                <div className="text-xs font-semibold text-[#737F71] uppercase mt-0.5">
                   {baselineAssessment.category} Risk
                 </div>
               </div>
               <div
                 className={`w-3.5 h-3.5 rounded-full ${
                   baselineAssessment.category === 'HIGH'
-                    ? 'bg-[#F43F5E]'
+                    ? 'bg-[#C87868]'
                     : baselineAssessment.category === 'MODERATE'
-                    ? 'bg-[#F59E0B]'
-                    : 'bg-[#00F2FE]'
+                    ? 'bg-[#9E8C58]'
+                    : 'bg-[#45664F]'
                 }`}
               />
             </div>
-            <p className="text-[11px] text-[#94A3B8] line-clamp-2">
+            <p className="text-[11px] text-[#737F71] line-clamp-2 leading-relaxed">
               {baselineAssessment.explanation}
             </p>
           </div>
 
           {/* User-Adjusted Scenario */}
-          <div className="p-4 rounded-xl bg-[#132035] border border-[#00F2FE]/40 relative overflow-hidden">
-            <div className="flex items-center justify-between pb-2 border-b border-[#1C2B44]">
-              <span className="text-xs font-semibold text-[#00F2FE] uppercase flex items-center gap-1.5">
+          <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#45664F]/50 shadow-xs relative overflow-hidden">
+            <div className="flex items-center justify-between pb-2 border-b border-[#DDE3D8]">
+              <span className="text-xs font-bold text-[#45664F] uppercase flex items-center gap-1.5">
                 Adjusted Scenario
               </span>
               <div
                 className={`flex items-center gap-1 text-xs font-mono font-bold px-2 py-0.5 rounded ${
                   scoreDelta > 0
-                    ? 'bg-[#F43F5E]/20 text-[#F43F5E] border border-[#F43F5E]/40'
+                    ? 'bg-[#C87868]/15 text-[#C87868] border border-[#C87868]/30'
                     : scoreDelta < 0
-                    ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/40'
-                    : 'bg-[#1C2B44] text-[#94A3B8]'
+                    ? 'bg-[#E5EBDD] text-[#45664F] border border-[#45664F]/30'
+                    : 'bg-[#F7F8F4] text-[#737F71] border border-[#DDE3D8]'
                 }`}
               >
                 {scoreDelta > 0 ? (
@@ -356,25 +349,25 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
 
             <div className="flex items-center justify-between my-3">
               <div>
-                <div className="text-2xl font-extrabold font-mono text-white">
+                <div className="text-2xl font-extrabold font-mono text-[#344638]">
                   {simulatedAssessment.totalScore}
-                  <span className="text-xs text-[#94A3B8] font-normal"> / 100</span>
+                  <span className="text-xs text-[#737F71] font-normal"> / 100</span>
                 </div>
-                <div className="text-xs font-medium text-[#00F2FE] uppercase">
+                <div className="text-xs font-bold text-[#45664F] uppercase mt-0.5">
                   {simulatedAssessment.category} Risk
                 </div>
               </div>
               <div
                 className={`w-3.5 h-3.5 rounded-full ${
                   simulatedAssessment.category === 'HIGH'
-                    ? 'bg-[#F43F5E] shadow-[0_0_8px_#F43F5E]'
+                    ? 'bg-[#C87868]'
                     : simulatedAssessment.category === 'MODERATE'
-                    ? 'bg-[#F59E0B] shadow-[0_0_8px_#F59E0B]'
-                    : 'bg-[#00F2FE] shadow-[0_0_8px_#00F2FE]'
+                    ? 'bg-[#9E8C58]'
+                    : 'bg-[#45664F]'
                 }`}
               />
             </div>
-            <p className="text-[11px] text-[#CBD5E1] line-clamp-2">
+            <p className="text-[11px] text-[#556353] line-clamp-2 leading-relaxed">
               {simulatedAssessment.explanation}
             </p>
           </div>
@@ -382,10 +375,10 @@ export const StormSimulator: React.FC<StormSimulatorProps> = ({
       </div>
 
       {/* Transparent Disclaimer */}
-      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#09111F] border border-[#1C2B44] text-[11px] text-[#94A3B8]">
-        <AlertCircle className="w-4 h-4 text-[#00F2FE] shrink-0 mt-0.5" />
-        <div>
-          <strong className="text-white">Heuristic Simulation Notice:</strong> This simulator illustrates relative susceptibility under municipal flood mechanics (BMC capacity, elevation saucer depth, tidal lockout). It is designed to assist urban planning and emergency precaution decisions, not to claim hydrodynamic sensor telemetry.
+      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#F7F8F4] border border-[#DDE3D8] text-[11px] text-[#737F71]">
+        <AlertCircle className="w-4 h-4 text-[#45664F] shrink-0 mt-0.5" />
+        <div className="leading-relaxed">
+          <strong className="text-[#344638]">Heuristic Simulation Notice:</strong> This simulator illustrates relative susceptibility under municipal flood mechanics (BMC capacity, elevation saucer depth, tidal lockout). It is designed to assist urban planning and emergency precaution decisions, not to claim hydrodynamic sensor telemetry.
         </div>
       </div>
     </div>

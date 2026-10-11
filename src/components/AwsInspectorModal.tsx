@@ -10,9 +10,8 @@ import {
   Layers,
   ArrowRight,
   Code,
-  ShieldAlert,
 } from 'lucide-react';
-import { ApiStatus, checkAwsHealth } from '../services/api';
+import { ApiStatus } from '../services/api';
 import { MUMBAI_LOCATIONS } from '../data/mumbaiLocations';
 
 interface AwsInspectorModalProps {
@@ -93,29 +92,29 @@ export const AwsInspectorModal: React.FC<AwsInspectorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-[#0E1726] border border-[#283D62] rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+      <div className="bg-[#FFFFFF] border border-[#DDE3D8] rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#1C2B44] bg-[#09111F]/80 sticky top-0 z-10 backdrop-blur-md">
+        <div className="flex items-center justify-between p-5 border-b border-[#DDE3D8] bg-[#F7F8F4] sticky top-0 z-10 backdrop-blur-md">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#00F2FE]/10 border border-[#00F2FE]/40 flex items-center justify-center text-[#00F2FE]">
+            <div className="w-8 h-8 rounded-lg bg-[#E5EBDD] border border-[#DDE3D8] flex items-center justify-center text-[#45664F]">
               <Server className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#344638] flex items-center gap-2">
                 AWS Serverless Integration & Verification
-                <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#1C2B44] text-[#00F2FE]">
+                <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#E5EBDD] text-[#45664F] font-semibold border border-[#DDE3D8]">
                   ap-south-1
                 </span>
               </h3>
-              <p className="text-xs text-[#94A3B8]">
+              <p className="text-xs text-[#737F71]">
                 Real-time API Gateway contract, Lambda execution latency & architecture.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-[#94A3B8] hover:text-white p-1 rounded-lg hover:bg-[#1C2B44] transition-colors cursor-pointer"
+            className="text-[#737F71] hover:text-[#344638] p-1.5 rounded-lg hover:bg-[#E5EBDD] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -124,48 +123,48 @@ export const AwsInspectorModal: React.FC<AwsInspectorModalProps> = ({
         {/* Content */}
         <div className="p-5 space-y-6 text-xs">
           {/* Architecture Pipeline Banner */}
-          <div className="p-4 rounded-xl bg-[#09111F] border border-[#1C2B44] space-y-3">
-            <div className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-2">
-              <Cloud className="w-4 h-4 text-[#00F2FE]" />
+          <div className="p-4 rounded-xl bg-[#F7F8F4] border border-[#DDE3D8] space-y-3">
+            <div className="text-xs font-bold text-[#344638] uppercase tracking-wider flex items-center gap-2">
+              <Cloud className="w-4 h-4 text-[#45664F]" />
               Production AWS Architecture Flow
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 text-center">
-              <div className="p-2.5 rounded-lg bg-[#132035] border border-[#1C2B44] flex-1 min-w-[120px]">
-                <div className="text-[10px] text-[#94A3B8]">Frontend</div>
-                <div className="font-bold text-white mt-0.5">S3 + CloudFront</div>
-                <div className="text-[9px] text-[#00F2FE] font-mono">React 19 / Vite</div>
+              <div className="p-2.5 rounded-lg bg-[#FFFFFF] border border-[#DDE3D8] flex-1 min-w-[120px] shadow-2xs">
+                <div className="text-[10px] text-[#737F71]">Frontend</div>
+                <div className="font-bold text-[#344638] mt-0.5">S3 + CloudFront</div>
+                <div className="text-[9px] text-[#45664F] font-mono">React 19 / Vite</div>
               </div>
-              <ArrowRight className="w-4 h-4 text-[#94A3B8] hidden sm:block" />
-              <div className="p-2.5 rounded-lg bg-[#132035] border border-[#1C2B44] flex-1 min-w-[120px]">
-                <div className="text-[10px] text-[#94A3B8]">Ingress</div>
-                <div className="font-bold text-white mt-0.5">API Gateway HTTP API</div>
-                <div className="text-[9px] text-[#00F2FE] font-mono">CORS / Routing</div>
+              <ArrowRight className="w-4 h-4 text-[#737F71] hidden sm:block" />
+              <div className="p-2.5 rounded-lg bg-[#FFFFFF] border border-[#DDE3D8] flex-1 min-w-[120px] shadow-2xs">
+                <div className="text-[10px] text-[#737F71]">Ingress</div>
+                <div className="font-bold text-[#344638] mt-0.5">API Gateway HTTP API</div>
+                <div className="text-[9px] text-[#45664F] font-mono">CORS / Routing</div>
               </div>
-              <ArrowRight className="w-4 h-4 text-[#94A3B8] hidden sm:block" />
-              <div className="p-2.5 rounded-lg bg-[#132035] border border-[#1C2B44] flex-1 min-w-[120px]">
-                <div className="text-[10px] text-[#94A3B8]">Compute</div>
-                <div className="font-bold text-white mt-0.5">AWS Lambda Node 20</div>
-                <div className="text-[9px] text-[#00F2FE] font-mono">Heuristic Engine</div>
+              <ArrowRight className="w-4 h-4 text-[#737F71] hidden sm:block" />
+              <div className="p-2.5 rounded-lg bg-[#FFFFFF] border border-[#DDE3D8] flex-1 min-w-[120px] shadow-2xs">
+                <div className="text-[10px] text-[#737F71]">Compute</div>
+                <div className="font-bold text-[#344638] mt-0.5">AWS Lambda Node 20</div>
+                <div className="text-[9px] text-[#45664F] font-mono">Heuristic Engine</div>
               </div>
-              <ArrowRight className="w-4 h-4 text-[#94A3B8] hidden sm:block" />
-              <div className="p-2.5 rounded-lg bg-[#132035] border border-[#1C2B44] flex-1 min-w-[120px]">
-                <div className="text-[10px] text-[#94A3B8]">Telemetry</div>
-                <div className="font-bold text-white mt-0.5">Open-Meteo</div>
-                <div className="text-[9px] text-[#00F2FE] font-mono">Mumbai Weather</div>
+              <ArrowRight className="w-4 h-4 text-[#737F71] hidden sm:block" />
+              <div className="p-2.5 rounded-lg bg-[#FFFFFF] border border-[#DDE3D8] flex-1 min-w-[120px] shadow-2xs">
+                <div className="text-[10px] text-[#737F71]">Telemetry</div>
+                <div className="font-bold text-[#344638] mt-0.5">Open-Meteo</div>
+                <div className="text-[9px] text-[#45664F] font-mono">Mumbai Weather</div>
               </div>
             </div>
           </div>
 
           {/* Interactive Live Endpoint Tester */}
-          <div className="p-4 rounded-xl bg-[#132035]/60 border border-[#1C2B44] space-y-3">
+          <div className="p-4 rounded-xl bg-[#F7F8F4] border border-[#DDE3D8] space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
-                <Code className="w-4 h-4 text-[#00F2FE]" />
+              <span className="font-bold text-[#344638] text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <Code className="w-4 h-4 text-[#45664F]" />
                 Live Endpoint Verification Test
               </span>
               <button
                 onClick={handleCopySampleCurl}
-                className="text-[11px] text-[#00F2FE] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-[11px] text-[#45664F] hover:underline flex items-center gap-1 cursor-pointer font-medium"
               >
                 <Copy className="w-3 h-3" />
                 {copied ? 'Copied cURL!' : 'Copy cURL Command'}
@@ -178,12 +177,12 @@ export const AwsInspectorModal: React.FC<AwsInspectorModalProps> = ({
                 value={testEndpoint}
                 onChange={(e) => setTestEndpoint(e.target.value)}
                 placeholder="https://xxx.execute-api.ap-south-1.amazonaws.com or http://localhost:5001"
-                className="flex-1 bg-[#09111F] border border-[#1C2B44] rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00F2FE]"
+                className="flex-1 bg-[#FFFFFF] border border-[#DDE3D8] rounded-lg px-3 py-2 text-[#344638] font-mono text-xs focus:outline-none focus:border-[#45664F] shadow-2xs"
               />
               <button
                 onClick={handleRunVerification}
                 disabled={isTesting}
-                className="px-4 py-2 bg-[#00F2FE] hover:bg-[#00C2FF] text-[#09111F] font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 bg-[#45664F] hover:bg-[#344638] text-white font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
                 {isTesting ? 'Pinging...' : 'Verify'}
@@ -191,7 +190,7 @@ export const AwsInspectorModal: React.FC<AwsInspectorModalProps> = ({
             </div>
 
             {testError && (
-              <div className="p-3 rounded-lg bg-[#F43F5E]/10 border border-[#F43F5E]/30 text-[#F43F5E] flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-[#C87868]/10 border border-[#C87868]/30 text-[#C87868] flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>
                   <strong>Connection Error:</strong> {testError}. Ensure local Lambda emulator is running (`npm run api:dev`) or cloud endpoint is active.
@@ -200,17 +199,17 @@ export const AwsInspectorModal: React.FC<AwsInspectorModalProps> = ({
             )}
 
             {testResponse && (
-              <div className="p-3 rounded-lg bg-[#09111F] border border-[#10B981]/40 space-y-2">
-                <div className="flex items-center justify-between text-xs pb-1.5 border-b border-[#1C2B44]">
-                  <span className="text-[#10B981] font-bold flex items-center gap-1.5">
+              <div className="p-3 rounded-lg bg-[#FFFFFF] border border-[#45664F]/40 space-y-2 shadow-2xs">
+                <div className="flex items-center justify-between text-xs pb-1.5 border-b border-[#DDE3D8]">
+                  <span className="text-[#45664F] font-bold flex items-center gap-1.5">
                     <CheckCircle className="w-3.5 h-3.5" />
                     Response 200 OK
                   </span>
-                  <span className="font-mono text-[#00F2FE]">
+                  <span className="font-mono text-[#45664F] font-semibold">
                     Latency: {testResponse.latencyMs} ms
                   </span>
                 </div>
-                <div className="font-mono text-[11px] text-[#94A3B8] max-h-48 overflow-y-auto bg-[#050A14] p-2.5 rounded border border-[#1C2B44]">
+                <div className="font-mono text-[11px] text-[#556353] max-h-48 overflow-y-auto bg-[#F7F8F4] p-2.5 rounded border border-[#DDE3D8]">
                   <pre>{JSON.stringify(testResponse.payload, null, 2)}</pre>
                 </div>
               </div>
@@ -218,12 +217,12 @@ export const AwsInspectorModal: React.FC<AwsInspectorModalProps> = ({
           </div>
 
           {/* Infrastructure As Code Reference */}
-          <div className="p-4 rounded-xl bg-[#09111F] border border-[#1C2B44] space-y-2">
-            <div className="text-xs font-semibold text-white flex items-center gap-2">
-              <Layers className="w-3.5 h-3.5 text-[#00F2FE]" />
+          <div className="p-4 rounded-xl bg-[#F7F8F4] border border-[#DDE3D8] space-y-2">
+            <div className="text-xs font-bold text-[#344638] flex items-center gap-2">
+              <Layers className="w-3.5 h-3.5 text-[#45664F]" />
               AWS SAM Template Spec (`infra/template.yaml`)
             </div>
-            <div className="font-mono text-[10px] text-[#94A3B8] bg-[#050A14] p-3 rounded border border-[#1C2B44] leading-relaxed">
+            <div className="font-mono text-[10px] text-[#556353] bg-[#FFFFFF] p-3 rounded border border-[#DDE3D8] leading-relaxed shadow-2xs">
               <div>Transform: AWS::Serverless-2016-10-31</div>
               <div>Region: ap-south-1 (Mumbai)</div>
               <div>Runtime: nodejs20.x (arm64 Graviton)</div>
@@ -234,10 +233,10 @@ export const AwsInspectorModal: React.FC<AwsInspectorModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#1C2B44] bg-[#09111F]/80 flex justify-end">
+        <div className="p-4 border-t border-[#DDE3D8] bg-[#F7F8F4] flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-[#1C2B44] hover:bg-[#283D62] text-white font-medium text-xs transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-[#E5EBDD] hover:bg-[#D8E2CE] text-[#344638] font-semibold text-xs transition-colors cursor-pointer"
           >
             Close Inspector
           </button>
